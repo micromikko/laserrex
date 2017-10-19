@@ -64,6 +64,7 @@ void taskExecute(void *pvParameters) {
 		 * read command from queue
 		 * parse command and assign parts to compack
 		 * 
+		 */
 	}
 }
 
