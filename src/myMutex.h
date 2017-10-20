@@ -18,9 +18,3 @@ private:
 };
 
 #endif /* MYMUTEX_H_ */
-
-/*
- * JASKAMUTEXI
- */
-
-
