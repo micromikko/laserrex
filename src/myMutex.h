@@ -18,16 +18,3 @@ private:
 };
 
 #endif /* MYMUTEX_H_ */
-
-/*
- * JASKAMUTEXI
- */
-
-/*
- * säätööö
- */
-
-
-/*
- * lisaa saatoa
- */
