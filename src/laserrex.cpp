@@ -22,11 +22,15 @@
 
 // TODO: insert other definitions and declarations here
 
-//myMutex exampleMutex;
-//QueueHandle_t exampleQueue;
-//xSemaphoreHandle exampleSemaphore;
+/*
+myMutex exampleMutex;
+QueueHandle_t exampleQueue;
+xSemaphoreHandle exampleSemaphore;
+// eventgroup?
+*/
 
-/* the following is required if runtime statistics are to be collected */
+QueueHandle_t commandQueue;
+
 extern "C" {
 	void vConfigureTimerForRunTimeStats( void ) {
 		Chip_SCT_Init(LPC_SCTSMALL1);
@@ -34,44 +38,82 @@ extern "C" {
 		LPC_SCTSMALL1->CTRL_U = SCT_CTRL_PRE_L(255) | SCT_CTRL_CLRCTR_L; // set prescaler to 256 (255 + 1), and start timer
 	}
 }
-/* end runtime statictics collection */
 
 static void prvSetupHardware(void) {
 	SystemCoreClockUpdate();
 	Board_Init();
 }
 
-//struct dippadei {
-//	DigitalIoPin *switch1 = new DigitalIoPin(0, 17, DigitalIoPin::pullup, true);
-//	DigitalIoPin *switch3 = new DigitalIoPin(1, 9, DigitalIoPin::pullup, true);
-//	DigitalIoPin *limitSwitch1 = new DigitalIoPin(0, 27, DigitalIoPin::pullup, true);
-//	DigitalIoPin *limitSwitch2 = new DigitalIoPin(0, 28, DigitalIoPin::pullup, true);
-//	Motor *mmm = new Motor;
-//};
-
-
-void exampleTask(void *pvParameters) {
-//	exampleStruct *p_SRTSRT = (exampleStruct*) pvParameters;
+void dtaskUART(void *pvParameters) {
 
 	for(;;) {
 
 	}
 }
-//xSemaphoreTake(exampleSemaphore, portMAX_DELAY);
-//xSemaphoreGive(exampleSemaphore);
 
+void taskExecute(void *pvParameters) {
+	Motor xMotor;
+	Motor yMotor;
+	commandPacket compack;
+	char commandBuffer[50];
+	
+	calibrate();
+	
+	for(;;) {
+		/*
+		 * read command from queue
+		 * parse command and assign parts to compack
+		 * 
+		 */
+	}
+}
+
+void dtaskLimit(void *pvParameters) {
+
+	for(;;) {
+		
+	}
+}
+
+void dtaskButton(void *pvParameters) {
+	/*
+	 * create button pins
+	 * 
+	 */
+	
+	for(;;) {
+		xSemaphoreTake(buttonSemaphore, portMAX_DELAY);
+	}
+}
 
 int main(void) {
+	/*
+	 * STUFF TO USE IN MAIN
+	 */
+	/*
+	ITM_init();
+	ITM_write("example\r\n");
+	exampleMutex =xSemaphoreCreateMutex();
+	exampleSemaphore = xSemaphoreCreateBinary();
+	xTaskCreate(exampleTask, "taskExample", 200, &exampleParameter NULL, (tskIDLE_PRIORITY + 1UL), NULL);
+	*/
+	
 	prvSetupHardware();
+	char buffer[50];
+	commandQueue = xQueueCreate(5, sizeof(buffer));
 
-//	ITM_init();
-//	ITM_write("[Program started]\n");
+	/*
+	 * tasks
+	 */
+	xTaskCreate(taskExecute, "taskExecute", 100, /*&exampleParameter*/ NULL, (tskIDLE_PRIORITY + 1UL), NULL);
+	
+	/*
+	 * dtasks
+	 */
+	xTaskCreate(dtaskUART, "dtaskUART", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
+	xTaskCreate(dtaskLimit, "dtaskLimit", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
+	xTaskCreate(dtaskButton, "dtaskButton", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 
-//	exampleMutex =xSemaphoreCreateMutex();
-//	exampleSemaphore = xSemaphoreCreateBinary();
-//	exampleQueue = xQueueCreate(/*queueSize*/ 20, sizeof(exampleStruct));
-
-	xTaskCreate(exampleTask, "taskExample", 200, /*&exampleParameter*/ NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 
 	vTaskStartScheduler();
 
@@ -79,3 +121,46 @@ int main(void) {
 
     return 0 ;
 }
+
+/*
+ * PINS TO USE
+ */
+// [on board]	[port_pin]		[description]
+// D6			1_3				Limit Y Min
+// D7			0_0				Limit Y Max
+// D3			0_9				Limit X Max
+// D2			0_29			Limit X Min
+// D12			0_12			Laser
+// D4			0_10			Pen
+// D10			0_27			XMotor
+// D11			0_28			Xmotor Direction
+// D8			0_24			YMotor
+// D9			1_0				YMotor Direction
+// A0			0_8				SW1
+// A1			1_6				SW2
+// A2			1_8				SW3
+
+// Note:
+// - Limit switches pins should be inverted (by default they are high)
+// - LASER PIN IS BY DEFAULT HIGH which powers on the laser at maximum power. Driver the pin low right after your program starts
+
+/*
+struct exampleStruct {
+	DigitalIoPin *switch1 = new DigitalIoPin(0, 17, DigitalIoPin::pullup, true);
+	DigitalIoPin *switch3 = new DigitalIoPin(1, 9, DigitalIoPin::pullup, true);
+	DigitalIoPin *limitSwitch1 = new DigitalIoPin(0, 27, DigitalIoPin::pullup, true);
+	DigitalIoPin *limitSwitch2 = new DigitalIoPin(0, 28, DigitalIoPin::pullup, true);
+	Motor *mmm = new Motor;
+};
+*/
+
+/*
+void exampleTask(void *pvParameters) {
+	exampleStruct *p_SRTSRT = (exampleStruct*) pvParameters;
+	xSemaphoreTake(exampleSemaphore, portMAX_DELAY);
+	xSemaphoreGive(exampleSemaphore);
+	for(;;) {
+
+	}
+}
+*/
