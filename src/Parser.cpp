@@ -12,6 +12,10 @@ Parser::Parser() {
 
 }
 
+/*
+ * JASKA
+ */
+
 Parser::~Parser() {
 	// TODO Auto-generated destructor stub
 }
