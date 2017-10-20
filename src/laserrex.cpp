@@ -18,7 +18,10 @@
 #include "ITM_write.h"
 #include "Motor.h"
 #include "myMutex.h"
+#include <string>
 #include <cstring>
+#include <cstdlib>
+
 
 // TODO: insert other definitions and declarations here
 
@@ -44,6 +47,7 @@ static void prvSetupHardware(void) {
 	Board_Init();
 }
 
+
 void dtaskUART(void *pvParameters) {
 
 	for(;;) {
@@ -52,14 +56,18 @@ void dtaskUART(void *pvParameters) {
 }
 
 void taskExecute(void *pvParameters) {
-	Motor xMotor;
-	Motor yMotor;
-	commandPacket compack;
-	char commandBuffer[50];
-	
-	calibrate();
+//	Motor xMotor;
+//	Motor yMotor;
+//	Parser parsakaali;
+//	CommandPacket compack;
+//	char commandBuffer[50];
+//	BaseType_t status;
+
+//	calibrate();
 	
 	for(;;) {
+//		status = xQueueSendToFront(commandQueue, &commandBuffer, 0);
+//		compack = parsakaali.generalParser(commandBuffer);
 		/*
 		 * read command from queue
 		 * parse command and assign parts to compack
@@ -82,7 +90,7 @@ void dtaskButton(void *pvParameters) {
 	 */
 	
 	for(;;) {
-		xSemaphoreTake(buttonSemaphore, portMAX_DELAY);
+//		xSemaphoreTake(buttonSemaphore, portMAX_DELAY);
 	}
 }
 
@@ -91,7 +99,7 @@ int main(void) {
 	 * STUFF TO USE IN MAIN
 	 */
 	/*
-	ITM_init();
+
 	ITM_write("example\r\n");
 	exampleMutex =xSemaphoreCreateMutex();
 	exampleSemaphore = xSemaphoreCreateBinary();
@@ -99,8 +107,13 @@ int main(void) {
 	*/
 	
 	prvSetupHardware();
-	char buffer[50];
-	commandQueue = xQueueCreate(5, sizeof(buffer));
+	ITM_init();
+
+	/*
+	 * DUOMON SÄÄDETTÄVISSÄ
+	 */
+//	char buffer[50];
+//	commandQueue = xQueueCreate(5, sizeof(buffer));
 
 	/*
 	 * tasks
@@ -164,3 +177,4 @@ void exampleTask(void *pvParameters) {
 	}
 }
 */
+
