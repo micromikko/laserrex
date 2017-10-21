@@ -12,6 +12,7 @@ CommandPacket::CommandPacket() {
 	this->gormNum = 0;
 	this->targetX = 0;
 	this->targetY = 0;
+	this->auxDelay = 0;
 
 }
 

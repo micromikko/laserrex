@@ -13,10 +13,11 @@ public:
 	CommandPacket();
 	virtual ~CommandPacket();
 
-	char gorm;
-	int gormNum;
-	int targetX;
-	int targetY;
+	char gorm;		// G or M
+	int gormNum;	// G or M num
+	double targetX;	// target X-coordinate
+	double targetY;	// target Y-coordinate
+	long auxDelay;	// ?????
 
 };
 

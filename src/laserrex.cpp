@@ -23,8 +23,6 @@
 #include <cstdlib>
 #include "uart_module.h"
 
-
-
 // TODO: insert other definitions and declarations here
 
 /*
@@ -49,6 +47,13 @@ static void prvSetupHardware(void) {
 	Board_Init();
 }
 
+
+void dtaskUART(void *pvParameters) {
+
+	for(;;) {
+
+	}
+}
 
 void taskExecute(void *pvParameters) {
 //	Motor xMotor;
@@ -118,14 +123,13 @@ int main(void) {
 	/*
 	 * dtasks
 	 */
-
+	xTaskCreate(dtaskUART, "dtaskUART", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	xTaskCreate(dtaskLimit, "dtaskLimit", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	xTaskCreate(dtaskButton, "dtaskButton", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
-	xTaskCreate(dtaskUARTReader, 	"dtaskUARTReader", 	256, NULL, (tskIDLE_PRIORITY + 2UL), NULL);
-	xTaskCreate(taskPrinter,		"taskPrinter",		256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
-
+	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, NULL, (tskIDLE_PRIORITY +2UL), NULL);		
+	xTaskCreate(taskPrinter, "taskPrinter", 256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);		
+	
 	UARTModule_init();
-
 
 	vTaskStartScheduler();
 

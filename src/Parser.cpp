@@ -20,22 +20,35 @@ Parser::~Parser() {
 }
 
 void Parser::xyParse(char *c_comstr) {
+
 	/*
-	 * raksuta x
-	 *
-	 * raksuta y
+	 * Parse X
 	 */
+	char *pEnd;
+	this->compack->targetX = strtod(c_comstr, &pEnd);
+	c_comstr = pEnd + 2;
+
+	/*
+	 * Parse Y
+	 */
+	this->compack->targetY = strtod(c_comstr, &pEnd);
+	c_comstr = pEnd + 2;
+
+	/*
+	 * Parse auxDelay
+	 */
+	this->compack->auxDelay = strtol(c_comstr, &pEnd, 10);
 }
 
 void Parser::gcodeParse(char *c_comstr) {
-	char * pEnd;
+	char *pEnd;
 	uint8_t comNum = strtod(c_comstr, &pEnd);
 	c_comstr = pEnd;
 
 	switch(comNum) {
 	case 1:
 		this->compack->gormNum = 1;
-		xyParse(c_comstr + 1);
+		xyParse(c_comstr + 2);
 		break;
 	case 28:
 		this->compack->gormNum = 28;
