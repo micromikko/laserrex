@@ -1,0 +1,15 @@
+
+Debug/crt_common.xme
+Debug/crt_infolist.dtd
+Debug/crt_peripheral_defs.dtd
+Debug/laserrex.map
+Debug/laserrex_Debug.ld
+Debug/laserrex_Debug_library.ld
+Debug/laserrex_Debug_memory.ld
+Debug/LPC1549.xml
+Debug/LPC1549_part.xml
+Debug/LPC15xx_peripheral.xme
+Debug/makefile
+Debug/objects.mk
+Debug/sources.mk
+Debug/src/subdir.mk
