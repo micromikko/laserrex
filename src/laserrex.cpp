@@ -18,7 +18,10 @@
 #include "ITM_write.h"
 #include "Motor.h"
 #include "myMutex.h"
+#include <string>
 #include <cstring>
+#include <cstdlib>
+#include "uart_module.h"
 
 // TODO: insert other definitions and declarations here
 
@@ -44,22 +47,19 @@ static void prvSetupHardware(void) {
 	Board_Init();
 }
 
-void dtaskUART(void *pvParameters) {
-
-	for(;;) {
-
-	}
-}
-
 void taskExecute(void *pvParameters) {
-	Motor xMotor;
-	Motor yMotor;
-	commandPacket compack;
-	char commandBuffer[50];
-	
-	calibrate();
+//	Motor xMotor;
+//	Motor yMotor;
+//	Parser parsakaali;
+//	CommandPacket compack;
+//	char commandBuffer[50];
+//	BaseType_t status;
+
+//	calibrate();
 	
 	for(;;) {
+//		status = xQueueSendToFront(commandQueue, &commandBuffer, 0);
+//		compack = parsakaali.generalParser(commandBuffer);
 		/*
 		 * read command from queue
 		 * parse command and assign parts to compack
@@ -82,7 +82,7 @@ void dtaskButton(void *pvParameters) {
 	 */
 	
 	for(;;) {
-		xSemaphoreTake(buttonSemaphore, portMAX_DELAY);
+//		xSemaphoreTake(buttonSemaphore, portMAX_DELAY);
 	}
 }
 
@@ -91,7 +91,7 @@ int main(void) {
 	 * STUFF TO USE IN MAIN
 	 */
 	/*
-	ITM_init();
+
 	ITM_write("example\r\n");
 	exampleMutex =xSemaphoreCreateMutex();
 	exampleSemaphore = xSemaphoreCreateBinary();
@@ -99,8 +99,13 @@ int main(void) {
 	*/
 	
 	prvSetupHardware();
-	char buffer[50];
-	commandQueue = xQueueCreate(5, sizeof(buffer));
+	ITM_init();
+
+	/*
+	 * DUOMON SÄÄDETTÄVISSÄ
+	 */
+//	char buffer[50];
+//	commandQueue = xQueueCreate(5, sizeof(buffer));
 
 	/*
 	 * tasks
@@ -110,10 +115,12 @@ int main(void) {
 	/*
 	 * dtasks
 	 */
-	xTaskCreate(dtaskUART, "dtaskUART", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	xTaskCreate(dtaskLimit, "dtaskLimit", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	xTaskCreate(dtaskButton, "dtaskButton", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
-
+	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, NULL, (tskIDLE_PRIORITY +2UL), NULL);		
+	xTaskCreate(taskPrinter, "taskPrinter", 256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);		
+	
+	UARTModule_init();
 
 	vTaskStartScheduler();
 
@@ -164,3 +171,4 @@ void exampleTask(void *pvParameters) {
 	}
 }
 */
+

@@ -15,7 +15,3 @@ void myMutex::lock() {
 void myMutex::unlock() {
 	 xSemaphoreGive(mutex);
 }
-
-/**
- * JASKAAAA
- */

@@ -8,19 +8,22 @@
 #ifndef PARSER_H_
 #define PARSER_H_
 
+#include <string>
+#include "CommandPacket.h"
+
+
 class Parser {
 public:
 	Parser();
 	virtual ~Parser();
 
-	void generalParser(char * cmd);
-	void gcodeParser();
-	void mcodeParser();
+	CommandPacket generalParse(std::string commandString);
+	void gcodeParse(char *c_comstr);
+	void mcodeParse(char *c_comstr);
+	void xyParse(char *c_comstr);
 
-	/*
-	 * TESTII
-	 */
-
+private:
+	CommandPacket *compack;
 
 };
 
