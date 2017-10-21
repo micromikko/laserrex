@@ -5,9 +5,6 @@
  *      Author: micromikko
  */
 
-/*
- * hih hii, kutittaa
- */
 
 #include "CommandPacket.h"
 
