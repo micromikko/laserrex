@@ -26,6 +26,7 @@
 #include "ITM_write.h"
 
 #include "uart_module.h"
+#include "sw_btn_interrupts.h"
 #include "Motor.h"
 #include "Parser.h"
 #include "CommandPacket.h"
@@ -99,6 +100,12 @@ int main(void) {
 	 */
 //	xTaskCreate(dtaskLimit, "dtaskLimit", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 //	xTaskCreate(dtaskButton, "dtaskButton", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
+	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, NULL, (tskIDLE_PRIORITY +2UL), NULL);		
+	xTaskCreate(taskPrinter, "taskPrinter", 256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
+	xTaskCreate(dtaskHardStop, "HardStopTask", 100, NULL, (tskIDLE_PRIORITY + 4UL), NULL); // keep at highest priority!
+	
+	UARTModule_init();
+	GPIO_interrupt_init();
 //	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, NULL, (tskIDLE_PRIORITY +2UL), NULL);
 //	xTaskCreate(taskPrinter, "taskPrinter", 256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	

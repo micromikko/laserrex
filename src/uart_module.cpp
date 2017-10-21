@@ -47,7 +47,9 @@ void UARTModule_init() {
 static void configUARTInterrupt() {
 	uint32_t mask = (1 << 0);
 	Chip_UART_IntEnable(LPC_USART0, mask);
-	NVIC_SetPriority(UART0_IRQn, 7);
+	/* I added the macro here for safety so we don't interfere with system interrupts
+	 * - Simo */
+	NVIC_SetPriority(UART0_IRQn, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 2);
 	NVIC_EnableIRQ(UART0_IRQn);
 }
 
