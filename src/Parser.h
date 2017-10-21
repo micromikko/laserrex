@@ -17,10 +17,21 @@ public:
 	Parser();
 	virtual ~Parser();
 
-	CommandPacket generalParse(std::string commandString);
+	CommandPacket generalParse(const std::string commandString);
 	void gcodeParse(char *c_comstr);
 	void mcodeParse(char *c_comstr);
 	void xyParse(char *c_comstr);
+
+	void penParse(char *c_comstr);
+	void laserParse(char *c_comstr);
+	void m10Parse(char *c_comstr);
+
+	void debug(const char *str, bool showAll=false);
+	//void debugG28();
+
+	//void debugM1();
+	//void debugM4();
+	//void debugM10();
 
 private:
 	CommandPacket *compack;

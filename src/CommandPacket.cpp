@@ -10,9 +10,13 @@
 CommandPacket::CommandPacket() {
 	this->gorm = 0;
 	this->gormNum = 0;
+
 	this->targetX = 0;
 	this->targetY = 0;
 	this->auxDelay = 0;
+
+	this->targetPen = 0;
+	this->targetLaser = 0;
 
 }
 
