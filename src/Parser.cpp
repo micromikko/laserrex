@@ -21,11 +21,6 @@ Parser::~Parser() {
 	delete compack;
 }
 
-//m10
-//m4 0
-//m1 90
-//m1 130
-
 void Parser::m10Parse(char *c_comstr) {
 	/*
 	 * -.,-.,-., printtaa vaan initialization juttuja.
@@ -62,26 +57,16 @@ void Parser::mcodeParse(char *c_comstr) {
 
 void Parser::xyParse(char *c_comstr) {
 
-	/*
-	 * Parse X
-	 */
 	char *pEnd;
 	this->compack->targetX = strtod(c_comstr, &pEnd);
 	c_comstr = pEnd + 2;
 
-	/*
-	 * Parse Y
-	 */
 	this->compack->targetY = strtod(c_comstr, &pEnd);
 	c_comstr = pEnd + 2;
-
-	/*
-	 * Parse auxDelay
-	 */
+	
 	this->compack->auxDelay = strtol(c_comstr, &pEnd, 10);
 	//  -.,-.,-., consider atoi
 //	this->compack->auxDelay = atoi(c_comstr);
-
 }
 
 void Parser::gcodeParse(char *c_comstr) {
@@ -123,17 +108,7 @@ void Parser::debug(const char *str, bool showAll) {
 		strcpy(commandBuffer, str);
 
 		*this->compack = this->generalParse(commandBuffer);
-
-//		char gorm;		// G or M
-//		int gormNum;	// G or M num
-//
-//		double targetX;	// target X-coordinate
-//		double targetY;	// target Y-coordinate
-//		long auxDelay;	// ?????
-//
-//		int targetPen;
-//		int targetLaser;
-
+	
 		if(showAll) {
 			const char *format = "gorm: %c\r\ngormNum: %d\r\ntargetX: %.2f\r\ntargetY: %.2f\r\nauxDelay: %d\r\ntargetPen: %d\r\ntargetLaser: %d\r\n";
 			memset(commandBuffer, 0, sizeof(commandBuffer));
@@ -175,5 +150,3 @@ void Parser::debug(const char *str, bool showAll) {
 		}
 
 }
-
-
