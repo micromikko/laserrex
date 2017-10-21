@@ -27,11 +27,6 @@ public:
 	void m10Parse(char *c_comstr);
 
 	void debug(const char *str, bool showAll=false);
-	//void debugG28();
-
-	//void debugM1();
-	//void debugM4();
-	//void debugM10();
 
 private:
 	CommandPacket *compack;
