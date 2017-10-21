@@ -23,6 +23,8 @@ public:
 	int targetPen;
 	int targetLaser;
 	
+	void reset();
+
 };
 
 #endif /* SRC_COMMANDPACKET_H_ */
