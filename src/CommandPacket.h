@@ -5,8 +5,8 @@
  *      Author: micromikko
  */
 
-#ifndef SRC_COMMANDPACKET_H_
-#define SRC_COMMANDPACKET_H_
+#ifndef COMMANDPACKET_H_
+#define COMMANDPACKET_H_
 
 class CommandPacket {
 public:
@@ -27,4 +27,4 @@ public:
 
 };
 
-#endif /* SRC_COMMANDPACKET_H_ */
+#endif /* COMMANDPACKET_H_ */
