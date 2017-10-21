@@ -7,11 +7,13 @@
 
 #include "PlotterData.h"
 
-PlotterData::PlotterData(plotterMode plotmode) {
+
+
+PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye) {
 	this->currentX = 0;
 	this->currentY = 0;
 
-	switch(plotterMode) {
+	switch(kayYouElElEye) {
 		case none:
 			this->currentPenPos = 0;
 			this->currentLaserPos = 0;
@@ -36,11 +38,11 @@ PlotterData::PlotterData(plotterMode plotmode) {
 	this->stepsPerMMY = 0;
 }
 
-PlotterData::PlotterData(plotterMode plotMode, int axisX, int axisY) {
+PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye, int axisX, int axisY) {
 	this->currentX = 0;
 	this->currentY = 0;
 
-	switch(plotterMode) {
+	switch(kayYouElElEye) {
 		case none:
 			this->currentPenPos = 0;
 			this->currentLaserPos = 0;
@@ -58,8 +60,8 @@ PlotterData::PlotterData(plotterMode plotMode, int axisX, int axisY) {
 	this->axisLengthX = axisX;
 	this->axisLengthY = axisY;
 
-	this->stepCountX;
-	this->stepCountY;
+	this->stepCountX = 0;
+	this->stepCountY = 0;
 
 	this->stepsPerMMX = 0;
 	this->stepsPerMMY = 0;
