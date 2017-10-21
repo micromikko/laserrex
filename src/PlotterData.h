@@ -5,22 +5,30 @@
  *      Author: micromikko
  */
 
-#ifndef SRC_PLOTTERDATA_H_
-#define SRC_PLOTTERDATA_H_
+/*
+ * the very newest of tests
+ */
+
+#ifndef PLOTTERDATA_H_
+#define PLOTTERDATA_H_
+
 
 class PlotterData {
 public:
 
-	enum plotterMode {
+	enum KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI {
 		none,
 		pen,
 		laser
 	};
 
-	PlotterData(plotterMode plotMode = none);
-	PlotterData(plotterMode plotMode, int axisX, int axisY);
-
+	PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye=none);
+	PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye, int axisX, int axisY);
+//	PlotterData(int jaska);
+//	PlotterData(int jaska, int axisX, int axisY);
 	virtual ~PlotterData();
+
+
 
 	int plotterMode;
 
@@ -42,8 +50,9 @@ public:
 	void setStepsPerMMX();
 	void setStepsPerMMY();
 
+private:
 
 };
 
-#endif /* SRC_PLOTTERDATA_H_ */
+#endif /* PLOTTERDATA_H_ */
 

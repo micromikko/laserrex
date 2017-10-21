@@ -5,6 +5,7 @@
  *      Author: micromikko
  */
 
+
 #include "CommandPacket.h"
 
 CommandPacket::CommandPacket() {
