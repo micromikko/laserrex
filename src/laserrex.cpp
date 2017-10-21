@@ -24,6 +24,7 @@
 #include "uart_module.h"
 
 
+
 // TODO: insert other definitions and declarations here
 
 /*
@@ -48,13 +49,6 @@ static void prvSetupHardware(void) {
 	Board_Init();
 }
 
-
-void dtaskUART(void *pvParameters) {
-
-	for(;;) {
-
-	}
-}
 
 void taskExecute(void *pvParameters) {
 //	Motor xMotor;
