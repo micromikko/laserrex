@@ -13,17 +13,16 @@ public:
 	CommandPacket();
 	virtual ~CommandPacket();
 
-	char gorm;		// G or M
-	int gormNum;	// G or M num
+	char gorm;
+	int gormNum;
 
-	double targetX;	// target X-coordinate
-	double targetY;	// target Y-coordinate
-	long auxDelay;	// ?????
+	double targetX;
+	double targetY;
+	long auxDelay;
 
 	int targetPen;
 	int targetLaser;
-
-
+	
 };
 
 #endif /* SRC_COMMANDPACKET_H_ */
