@@ -9,19 +9,27 @@
 #include <cr_section_macros.h>
 
 // TODO: insert other include files here
+#include <string>
+#include <cstring>
+#include <cstdlib>
 
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
-#include "DigitalIoPin.h"
 #include "semphr.h"
-#include "ITM_write.h"
-#include "Motor.h"
+
+
+
+
+#include "DigitalIoPin.h"
 #include "myMutex.h"
-#include <string>
-#include <cstring>
-#include <cstdlib>
+#include "ITM_write.h"
+
 #include "uart_module.h"
+#include "Motor.h"
+#include "Parser.h"
+#include "CommandPacket.h"
+
 
 // TODO: insert other definitions and declarations here
 
@@ -47,23 +55,19 @@ static void prvSetupHardware(void) {
 	Board_Init();
 }
 
-void taskExecute(void *pvParameters) {
-//	Motor xMotor;
-//	Motor yMotor;
-//	Parser parsakaali;
-//	CommandPacket compack;
-//	char commandBuffer[50];
-//	BaseType_t status;
 
-//	calibrate();
-	
+
+void taskExecute(void *pvParameters) {
+	Parser parsakaali;
+	const char *debugCommand = "G28\r\n";		//enter gcode
+	parsakaali.debug(debugCommand, true);		// set true or false to see all info in compack or given command
 	for(;;) {
 //		status = xQueueSendToFront(commandQueue, &commandBuffer, 0);
-//		compack = parsakaali.generalParser(commandBuffer);
+
 		/*
 		 * read command from queue
 		 * parse command and assign parts to compack
-		 * 
+		 * pass info from compack to motors, pen or laser
 		 */
 	}
 }
@@ -76,51 +80,29 @@ void dtaskLimit(void *pvParameters) {
 }
 
 void dtaskButton(void *pvParameters) {
-	/*
-	 * create button pins
-	 * 
-	 */
 	
 	for(;;) {
-//		xSemaphoreTake(buttonSemaphore, portMAX_DELAY);
 	}
 }
 
 int main(void) {
-	/*
-	 * STUFF TO USE IN MAIN
-	 */
-	/*
-
-	ITM_write("example\r\n");
-	exampleMutex =xSemaphoreCreateMutex();
-	exampleSemaphore = xSemaphoreCreateBinary();
-	xTaskCreate(exampleTask, "taskExample", 200, &exampleParameter NULL, (tskIDLE_PRIORITY + 1UL), NULL);
-	*/
-	
 	prvSetupHardware();
 	ITM_init();
 
 	/*
-	 * DUOMON SÄÄDETTÄVISSÄ
-	 */
-//	char buffer[50];
-//	commandQueue = xQueueCreate(5, sizeof(buffer));
-
-	/*
 	 * tasks
 	 */
-	xTaskCreate(taskExecute, "taskExecute", 100, /*&exampleParameter*/ NULL, (tskIDLE_PRIORITY + 1UL), NULL);
+	xTaskCreate(taskExecute, "taskExecute", 200, /*&exampleParameter*/ NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	
 	/*
 	 * dtasks
 	 */
-	xTaskCreate(dtaskLimit, "dtaskLimit", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
-	xTaskCreate(dtaskButton, "dtaskButton", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
-	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, NULL, (tskIDLE_PRIORITY +2UL), NULL);		
-	xTaskCreate(taskPrinter, "taskPrinter", 256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);		
+//	xTaskCreate(dtaskLimit, "dtaskLimit", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
+//	xTaskCreate(dtaskButton, "dtaskButton", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
+//	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, NULL, (tskIDLE_PRIORITY +2UL), NULL);
+//	xTaskCreate(taskPrinter, "taskPrinter", 256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	
-	UARTModule_init();
+//	UARTModule_init();
 
 	vTaskStartScheduler();
 
@@ -128,6 +110,12 @@ int main(void) {
 
     return 0 ;
 }
+
+/*
+exampleMutex =xSemaphoreCreateMutex();
+exampleSemaphore = xSemaphoreCreateBinary();
+xTaskCreate(exampleTask, "taskExample", 200, &exampleParameter NULL, (tskIDLE_PRIORITY + 1UL), NULL);
+*/
 
 /*
  * PINS TO USE

@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include "Motor.h"
 
+#include "ITM_write.h"
+
 Parser::Parser() {
 	 this->compack = new CommandPacket();
 
@@ -17,6 +19,45 @@ Parser::Parser() {
 
 Parser::~Parser() {
 	delete compack;
+}
+
+//m10
+//m4 0
+//m1 90
+//m1 130
+
+void Parser::m10Parse(char *c_comstr) {
+	/*
+	 * -.,-.,-., printtaa vaan initialization juttuja.
+	 */
+}
+
+void Parser::laserParse(char *c_comstr) {
+	this->compack->targetLaser = atoi(c_comstr);
+}
+
+void Parser::penParse(char *c_comstr) {
+	this->compack->targetPen = atoi(c_comstr);
+}
+
+void Parser::mcodeParse(char *c_comstr) {
+	char *pEnd;
+	uint8_t comNum = strtod(c_comstr, &pEnd);
+	c_comstr = pEnd;
+
+	switch(comNum) {
+	case 1:
+		this->compack->gormNum = 1;
+		penParse(c_comstr + 1);
+		break;
+	case 4:
+		this->compack->gormNum = 4;
+		laserParse(c_comstr + 1);
+		break;
+	case 10:
+		this->compack->gormNum = 10;
+		m10Parse(c_comstr + 1);
+	}
 }
 
 void Parser::xyParse(char *c_comstr) {
@@ -38,6 +79,9 @@ void Parser::xyParse(char *c_comstr) {
 	 * Parse auxDelay
 	 */
 	this->compack->auxDelay = strtol(c_comstr, &pEnd, 10);
+	//  -.,-.,-., consider atoi
+//	this->compack->auxDelay = atoi(c_comstr);
+
 }
 
 void Parser::gcodeParse(char *c_comstr) {
@@ -52,12 +96,8 @@ void Parser::gcodeParse(char *c_comstr) {
 		break;
 	case 28:
 		this->compack->gormNum = 28;
-		// home()
+		// TODO: home()
 	}
-}
-
-void Parser::mcodeParse(char *c_comstr) {
-
 }
 
 CommandPacket Parser::generalParse(std::string commandString) {
@@ -76,58 +116,64 @@ CommandPacket Parser::generalParse(std::string commandString) {
 	return *this->compack;
 }
 
+void Parser::debug(const char *str, bool showAll) {
 
+		char commandBuffer[200];
+		memset(commandBuffer, 0, sizeof(commandBuffer));
+		strcpy(commandBuffer, str);
 
+		*this->compack = this->generalParse(commandBuffer);
 
-
-// G1 X-75.50 Y165.50 A0
-//%.2f
-/* strtod example */
-//#include <stdio.h>      /* printf, NULL */
-//#include <stdlib.h>     /* strtod */
+//		char gorm;		// G or M
+//		int gormNum;	// G or M num
 //
-//int main ()
-//{
-//  char szOrbits[] = "365.24 29.53";
-//  char* pEnd;
-//  double d1, d2;
-//  d1 = strtod (szOrbits, &pEnd);
-//  d2 = strtod (pEnd, NULL);
-//  printf ("The moon completes %.2f orbits per Earth year.\n", d1/d2);
-//  return 0;
-//}
+//		double targetX;	// target X-coordinate
+//		double targetY;	// target Y-coordinate
+//		long auxDelay;	// ?????
+//
+//		int targetPen;
+//		int targetLaser;
 
-/*
-void parseCordinate(char * cmd)
-{
-  char * tmp;
-  char * str;
-  str = strtok_r(cmd, " ", &tmp);
-  tarX = curX;
-  tarY = curY;
-  while(str!=NULL){
-    str = strtok_r(0, " ", &tmp);
-    if(str[0]=='X'){
-      tarX = atof(str+1);
-    }else if(str[0]=='Y'){
-      tarY = atof(str+1);
-    }else if(str[0]=='Z'){
-      tarZ = atof(str+1);
-    }else if(str[0]=='F'){
-      float speed = atof(str+1);
-      tarSpd = speed/60; // mm/min -> mm/s
-    }else if(str[0]=='A'){
-      stepAuxDelay = atol(str+1);
-    }
-  }
-//  Serial.print("tarX:");
-//  Serial.print(tarX);
-//  Serial.print(", tarY:");
-//  Serial.print(tarY);
-//  Serial.print(", stepAuxDelay:");
-//  Serial.println(stepAuxDelay);
-  prepareMove();
+		if(showAll) {
+			const char *format = "gorm: %c\r\ngormNum: %d\r\ntargetX: %.2f\r\ntargetY: %.2f\r\nauxDelay: %d\r\ntargetPen: %d\r\ntargetLaser: %d\r\n";
+			memset(commandBuffer, 0, sizeof(commandBuffer));
+			snprintf(commandBuffer, sizeof(commandBuffer), format, this->compack->gorm, this->compack->gormNum,
+					this->compack->targetX, this->compack->targetY, this->compack->auxDelay, this->compack->targetPen, this->compack->targetLaser);
+			ITM_write(commandBuffer);
+		} else {
+			if(this->compack->gorm == 'G') {
+				if(this->compack->gormNum == 1) {
+					const char *format = "%c%d X%.2f Y%.2f A%d\r\n";
+					memset(commandBuffer, 0, sizeof(commandBuffer));
+					snprintf(commandBuffer, sizeof(commandBuffer), format, this->compack->gorm, this->compack->gormNum,
+							this->compack->targetX, this->compack->targetY, this->compack->auxDelay);
+					ITM_write(commandBuffer);
+				} else if(this->compack->gormNum == 28) {
+					const char *format = "%c%d\r\n";
+					memset(commandBuffer, 0, sizeof(commandBuffer));
+					snprintf(commandBuffer, sizeof(commandBuffer), format, this->compack->gorm, this->compack->gormNum);
+					ITM_write(commandBuffer);
+				}
+			} else if(this->compack->gorm == 'M') {
+				if(this->compack->gormNum == 1) {
+					const char *format = "%c%d %d\r\n";
+					memset(commandBuffer, 0, sizeof(commandBuffer));
+					snprintf(commandBuffer, sizeof(commandBuffer), format, this->compack->gorm, this->compack->gormNum, this->compack->targetPen);
+					ITM_write(commandBuffer);
+				} else if(this->compack->gormNum == 4) {
+					const char *format = "%c%d %d\r\n";
+					memset(commandBuffer, 0, sizeof(commandBuffer));
+					snprintf(commandBuffer, sizeof(commandBuffer), format, this->compack->gorm, this->compack->gormNum, this->compack->targetPen);
+					ITM_write(commandBuffer);
+				} else if(this->compack->gormNum == 10) {
+					const char *format = "%c%d\r\n";
+					memset(commandBuffer, 0, sizeof(commandBuffer));
+					snprintf(commandBuffer, sizeof(commandBuffer), format, this->compack->gorm, this->compack->gormNum);
+					ITM_write(commandBuffer);
+				}
+			}
+		}
+
 }
-*/
 
 
