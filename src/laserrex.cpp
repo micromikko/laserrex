@@ -83,7 +83,7 @@ void taskExecute(void *pvParameters) {
 //		 * pass info from compack to motors, pen or laser
 //		 */
 //		compack.reset();
-	}
+//	}
 }
 
 int main(void) {
