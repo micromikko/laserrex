@@ -24,12 +24,11 @@
 #include "ITM_write.h"
 
 #include "uart_module.h"
+#include "Handles.h"
 #include "sw_btn_interrupts.h"
 #include "Motor.h"
-#include "dtaskMotor.h"
 #include "Parser.h"
 #include "CommandPacket.h"
-#include "PlotterData.h"
 
 
 // TODO: insert other definitions and declarations here
@@ -41,7 +40,9 @@ xSemaphoreHandle exampleSemaphore;
 // eventgroup?
 */
 
-QueueHandle_t commandQueue;
+
+
+
 
 extern "C" {
 	void vConfigureTimerForRunTimeStats( void ) {
@@ -54,60 +55,85 @@ extern "C" {
 static void prvSetupHardware(void) {
 	SystemCoreClockUpdate();
 	Board_Init();
-	UARTModule_init();
-	GPIO_interrupt_init();
 }
 
 
 
 void taskExecute(void *pvParameters) {
-//	PlotterData plotdat(pen);		// init()
-//	CommandPacket compack;
-//	Parser parsakaali;
-//	BaseType_t status;
-//	caribourate(plotdat);
-//	std::string commandBuffer;
-//
-//	for(;;) {
-//		status = xQueueReceive(commandQueue, &commandBuffer, portMAX_DELAY);
-//		compack = parsakaali.generalParse(commandBuffer);
-//		if(move) {
-//			calculate movement
-//
-//			do movement usin
-//		}
-//
-//		/*
-//		 * read command from queue
-//		 * parse command and assign parts to compack
-//		 * pass info from compack to motors, pen or laser
-//		 */
-//		compack.reset();
-//	}
+	Handles *commonHandles = (Handles*) pvParameters;
+	Parser parsakaali;
+	std::string *rawCommand;
+	const char *debugCommand = "G28\r\n";		//enter gcode
+	parsakaali.debug(debugCommand, true);		// set true or false to see all info in compack or given command
+	for(;;) {
+//		status = xQueueSendToFront(commandQueue_parsed, &commandBuffer, 0);
+
+		/*
+		 * read command from queue
+		 * parse command and assign parts to compack
+		 * pass info from compack to motors, pen or laser
+		 */
+		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
+		CommandPacket cp = parsakaali.generalParse(*rawCommand);
+
+		/*For testing, print command packet content to ITM console*/
+		char buf[200];
+
+		sprintf(buf, "GorM: %c, GorMNum: %d, TargetX: %lf, TargetY: %lf, AUXDelay: %ld, TargetPen: %d, TargetLaser: %d\n",
+				cp.gorm, cp.gormNum, cp.targetX, cp.targetY, cp.auxDelay, cp.targetPen, cp.targetLaser	 );
+		ITM_write(buf);
+		delete rawCommand;
+
+		xSemaphoreGive(commonHandles->readyToReceive);
+
+	}
+}
+
+void dtaskLimit(void *pvParameters) {
+
+	for(;;) {
+		
+	}
+}
+
+void dtaskButton(void *pvParameters) {
+	
+	for(;;) {
+	}
 }
 
 int main(void) {
 	prvSetupHardware();
+	ITM_init();
+
+	Handles *commonHandles = new Handles;
+	commonHandles->commandQueue_raw = xQueueCreate(1, sizeof(std::string*));
+	commonHandles->readyToReceive = xSemaphoreCreateBinary();
 
 	/*
 	 * tasks
 	 */
-	xTaskCreate(taskExecute, "taskExecute", 200, /*&exampleParameter*/ NULL, (tskIDLE_PRIORITY + 1UL), NULL);
+	xTaskCreate(taskExecute, "taskExecute", 400, /*&exampleParameter*/ (void*) commonHandles, (tskIDLE_PRIORITY + 1UL), NULL);
 	
 	/*
 	 * dtasks
 	 */
 //	xTaskCreate(dtaskLimit, "dtaskLimit", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 //	xTaskCreate(dtaskButton, "dtaskButton", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
-	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, NULL, (tskIDLE_PRIORITY +2UL), NULL);		
-	xTaskCreate(taskPrinter, "taskPrinter", 256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
-	xTaskCreate(dtaskMotor, "MotorTask", 150, NULL, (tskIDLE_PRIORITY + 4UL), NULL);
+	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, (void*) commonHandles, (tskIDLE_PRIORITY +2UL), NULL);
+	xTaskCreate(taskSendOK, "taskSendOK", 256, (void*) commonHandles, (tskIDLE_PRIORITY + 1UL), NULL);
 	xTaskCreate(dtaskHardStop, "HardStopTask", 100, NULL, (tskIDLE_PRIORITY + 4UL), NULL); // keep at highest priority!
 	
 
+	xSemaphoreGive(commonHandles->readyToReceive);					 //This has to be initially available
+
+	UARTModule_init();
+	GPIO_interrupt_init();
 //	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, NULL, (tskIDLE_PRIORITY +2UL), NULL);
 //	xTaskCreate(taskPrinter, "taskPrinter", 256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	
+//	UARTModule_init();
+
 	vTaskStartScheduler();
 
 	for(;;);
