@@ -8,9 +8,9 @@
 #include "Parser.h"
 #include <cstring>
 #include <stdlib.h>
-#include "Motor.h"
-
-#include "ITM_write.h"
+//#include "Motor.h"		// ???
+#include <cstdio>			// DEBUG
+#include "ITM_write.h"		// DEBUG
 
 Parser::Parser() {
 	 this->compack = new CommandPacket();

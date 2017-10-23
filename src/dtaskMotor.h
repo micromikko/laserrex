@@ -8,6 +8,15 @@
 #ifndef DTASKMOTOR_H_
 #define DTASKMOTOR_H_
 
-void motorTask(void *pvParameters);
+//#include "FreeRTOS.h"
+//#include "semphr.h"
+//
+//xSemaphoreHandle motorSemaphore;
 
-#endif /* SRC_DTASKMOTOR_H_ */
+//extern "C" { void UART0_IRQHandler(void); }
+extern "C" { void RIT_IRQHandler(void); }
+void RIT_start(int count, int us);
+void dtaskMotor(void *pvParameters);
+void dtaskMotor_init();
+
+#endif /* DTASKMOTOR_H_ */

@@ -1,14 +1,16 @@
-/*
- * Motor.cpp
- *
- *  Created on: 12.9.2017
- *      Author: micromikko
- */
-
-#include "Motor.h"
-//#include "DigitalIoPin.h"
-//#include "task.h"
-
+///*
+// * Motor.cpp
+// *
+// *  Created on: 12.9.2017
+// *      Author: micromikko
+// */
+//
+//#include "Motor.h"
+//#include "dtaskMotor.h"
+//
+////#include "DigitalIoPin.h"
+////#include "task.h"
+//
 //extern "C" {
 //	void RIT_IRQHandler(void) {
 //		// This used to check if a context switch is required
@@ -33,61 +35,61 @@
 //		portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
 //	}
 //}
-
-Motor::Motor() {
-	this->stepPinX = new DigitalIoPin(0, 27, DigitalIoPin::output, false);
-	this->dirPinX = new DigitalIoPin(0, 28, DigitalIoPin::output, false);
-
-	this->stepPinY = new DigitalIoPin(0, 24, DigitalIoPin::output, false);
-	this->dirPinY = new DigitalIoPin(1, 0, DigitalIoPin::output, false);
-
-	this->ritCountX = 0;
-	this->ritCountY = 0;
-	this->dirX = true;
-	this->dirY = true;
-}
-
-Motor::~Motor() {
-	// TODO Auto-generated destructor stub
-	delete stepPinX;
-	delete dirPinX;
-	delete stepPinY;
-	delete dirPinY;
-}
-
-//void Motor::drive() {
-//	switch(this->motorAxis) {
-//	case 'X':
-//		driveX();
-//		break;
-//	case 'Y':
-//		driveY();
-//		break;
-//	}
+//
+//Motor::Motor() {
+//	this->stepPinX = new DigitalIoPin(0, 27, DigitalIoPin::output, false);
+//	this->dirPinX = new DigitalIoPin(0, 28, DigitalIoPin::output, false);
+//
+//	this->stepPinY = new DigitalIoPin(0, 24, DigitalIoPin::output, false);
+//	this->dirPinY = new DigitalIoPin(1, 0, DigitalIoPin::output, false);
+//
+//	this->ritCountX = 0;
+//	this->ritCountY = 0;
+//	this->dirX = true;
+//	this->dirY = true;
 //}
 //
-//void Motor::driveX() {
-//	this->dirPinX->write(dirX);
-//	this->stepPinX->write(true);
-//	this->stepPinX->write(false);
+//Motor::~Motor() {
+//	// TODO Auto-generated destructor stub
+//	delete stepPinX;
+//	delete dirPinX;
+//	delete stepPinY;
+//	delete dirPinY;
 //}
 //
-//void Motor::driveY() {
-//	this->dirPinY->write(dirY);
-//	this->stepPinY->write(true);
-//	this->stepPinY->write(false);
-//}
+////void Motor::drive() {
+////	switch(this->motorAxis) {
+////	case 'X':
+////		driveX();
+////		break;
+////	case 'Y':
+////		driveY();
+////		break;
+////	}
+////}
+////
+////void Motor::driveX() {
+////	this->dirPinX->write(dirX);
+////	this->stepPinX->write(true);
+////	this->stepPinX->write(false);
+////}
+////
+////void Motor::driveY() {
+////	this->dirPinY->write(dirY);
+////	this->stepPinY->write(true);
+////	this->stepPinY->write(false);
+////}
+////
+////bool Motor::changeDir(char ) {
+////	this->dirPin->write(!dir);
+////}
+////
+////int Motor::stop() {
+////	this->stepPin->write(false);
+////}
 //
-//bool Motor::changeDir(char ) {
-//	this->dirPin->write(!dir);
-//}
 //
-//int Motor::stop() {
-//	this->stepPin->write(false);
-//}
-
-
-
+//
 //void RIT_start(int count, int us) {
 //	uint64_t cmp_value;
 //	// Determine approximate compare value based on clock rate and passed interval
