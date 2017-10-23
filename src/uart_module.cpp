@@ -37,7 +37,6 @@ void UART0_IRQHandler(void) {
 
 
 /*Create queues for messaging characters from UART interrupt to reader task.  Configure UART interrupts.*/
-//Vähän ehkä rumaa tuoda kahvat inittifunktion kautta, refaktoroi paremmaks jos aikaa jää
 void UARTModule_init() {
 	configUARTInterrupt();
 	ITM_init();
