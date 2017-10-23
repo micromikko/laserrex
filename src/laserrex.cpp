@@ -57,11 +57,10 @@ extern "C" {
 static void prvSetupHardware(void) {
 	SystemCoreClockUpdate();
 	Board_Init();
-	ITM_init();
-	xSemaphoreGive(commonHandles->readyToReceive);					 //This has to be initially available
+//	ITM_init();
 
-	UARTModule_init();
-	GPIO_interrupt_init();
+//	UARTModule_init();
+//	GPIO_interrupt_init();
 }
 
 
@@ -70,8 +69,8 @@ void taskExecute(void *pvParameters) {
 	Handles *commonHandles = (Handles*) pvParameters;
 	Parser parsakaali;
 	std::string *rawCommand;
-	const char *debugCommand = "G28\r\n";		//enter gcode
-	parsakaali.debug(debugCommand, true);		// set true or false to see all info in compack or given command
+//	const char *debugCommand = "G28\r\n";		//enter gcode
+//	parsakaali.debug(debugCommand, true);		// set true or false to see all info in compack or given command
 	for(;;) {
 //		status = xQueueSendToFront(commandQueue_parsed, &commandBuffer, 0);
 
@@ -84,12 +83,15 @@ void taskExecute(void *pvParameters) {
 		CommandPacket cp = parsakaali.generalParse(*rawCommand);
 
 		/*For testing, print command packet content to ITM console*/
-		char buf[200];
+//		char buf[200];
+//
+//		sprintf(buf, "GorM: %c, GorMNum: %d, TargetX: %lf, TargetY: %lf, AUXDelay: %ld, TargetPen: %d, TargetLaser: %d\n",
+//				cp.gorm, cp.gormNum, cp.targetX, cp.targetY, cp.auxDelay, cp.targetPen, cp.targetLaser	 );
+//		ITM_write(buf);
+//		delete rawCommand;
+//		parsakaali.debug(*rawCommand, true);		// set true or false to see all info in compack or given command
+		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
 
-		sprintf(buf, "GorM: %c, GorMNum: %d, TargetX: %lf, TargetY: %lf, AUXDelay: %ld, TargetPen: %d, TargetLaser: %d\n",
-				cp.gorm, cp.gormNum, cp.targetX, cp.targetY, cp.auxDelay, cp.targetPen, cp.targetLaser	 );
-		ITM_write(buf);
-		delete rawCommand;
 
 		xSemaphoreGive(commonHandles->readyToReceive);
 
@@ -111,7 +113,7 @@ void dtaskButton(void *pvParameters) {
 
 int main(void) {
 	prvSetupHardware();
-	
+	ITM_init();
 
 	Handles *commonHandles = new Handles;
 	commonHandles->commandQueue_raw = xQueueCreate(1, sizeof(std::string*));
@@ -120,7 +122,7 @@ int main(void) {
 	/*
 	 * tasks
 	 */
-	xTaskCreate(taskExecute, "taskExecute", 400, /*&exampleParameter*/ (void*) commonHandles, (tskIDLE_PRIORITY + 1UL), NULL);
+	xTaskCreate(taskExecute, "taskExecute", 500, (void*) commonHandles, (tskIDLE_PRIORITY + 1UL), NULL);
 	
 	/*
 	 * dtasks
@@ -128,11 +130,14 @@ int main(void) {
 //	xTaskCreate(dtaskLimit, "dtaskLimit", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 //	xTaskCreate(dtaskButton, "dtaskButton", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, (void*) commonHandles, (tskIDLE_PRIORITY +2UL), NULL);
-	xTaskCreate(taskSendOK, "taskSendOK", 256, (void*) commonHandles, (tskIDLE_PRIORITY + 1UL), NULL);
+	xTaskCreate(taskSendOK, "taskSendOK", 256, (void*) commonHandles, (tskIDLE_PRIORITY + 4UL), NULL);
 	xTaskCreate(dtaskHardStop, "HardStopTask", 100, NULL, (tskIDLE_PRIORITY + 4UL), NULL); // keep at highest priority!
-	xTaskCreate(dtaskMotor, "MotorTask", 150, NULL, (tskIDLE_PRIORITY + 4UL), NULL);
 
 
+	xSemaphoreGive(commonHandles->readyToReceive);					 //This has to be initially available
+
+	UARTModule_init();
+	GPIO_interrupt_init();
 //	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, NULL, (tskIDLE_PRIORITY +2UL), NULL);
 //	xTaskCreate(taskPrinter, "taskPrinter", 256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	

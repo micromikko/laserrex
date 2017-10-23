@@ -101,7 +101,7 @@ CommandPacket Parser::generalParse(std::string commandString) {
 	return *this->compack;
 }
 
-void Parser::debug(const std::string stringula, bool showAll) {
+void Parser::debug(std::string stringula, bool showAll) {
 
 		char commandBuffer[200];
 		memset(commandBuffer, 0, sizeof(commandBuffer));
@@ -148,5 +148,5 @@ void Parser::debug(const std::string stringula, bool showAll) {
 				}
 			}
 		}
-
+		ITM_write("+++\r\n\r\n");
 }
