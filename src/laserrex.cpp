@@ -19,8 +19,6 @@
 #include "semphr.h"
 
 
-
-
 #include "DigitalIoPin.h"
 #include "myMutex.h"
 #include "ITM_write.h"
@@ -28,8 +26,10 @@
 #include "uart_module.h"
 #include "sw_btn_interrupts.h"
 #include "Motor.h"
+#include "dtaskMotor.h"
 #include "Parser.h"
 #include "CommandPacket.h"
+#include "PlotterData.h"
 
 
 // TODO: insert other definitions and declarations here
@@ -54,41 +54,40 @@ extern "C" {
 static void prvSetupHardware(void) {
 	SystemCoreClockUpdate();
 	Board_Init();
+	UARTModule_init();
+	GPIO_interrupt_init();
 }
 
 
 
 void taskExecute(void *pvParameters) {
-	Parser parsakaali;
-	const char *debugCommand = "G28\r\n";		//enter gcode
-	parsakaali.debug(debugCommand, true);		// set true or false to see all info in compack or given command
-	for(;;) {
-//		status = xQueueSendToFront(commandQueue, &commandBuffer, 0);
-
-		/*
-		 * read command from queue
-		 * parse command and assign parts to compack
-		 * pass info from compack to motors, pen or laser
-		 */
-	}
-}
-
-void dtaskLimit(void *pvParameters) {
-
-	for(;;) {
-		
-	}
-}
-
-void dtaskButton(void *pvParameters) {
-	
-	for(;;) {
+//	PlotterData plotdat(pen);		// init()
+//	CommandPacket compack;
+//	Parser parsakaali;
+//	BaseType_t status;
+//	caribourate(plotdat);
+//	std::string commandBuffer;
+//
+//	for(;;) {
+//		status = xQueueReceive(commandQueue, &commandBuffer, portMAX_DELAY);
+//		compack = parsakaali.generalParse(commandBuffer);
+//		if(move) {
+//			calculate movement
+//
+//			do movement usin
+//		}
+//
+//		/*
+//		 * read command from queue
+//		 * parse command and assign parts to compack
+//		 * pass info from compack to motors, pen or laser
+//		 */
+//		compack.reset();
 	}
 }
 
 int main(void) {
 	prvSetupHardware();
-	ITM_init();
 
 	/*
 	 * tasks
@@ -104,13 +103,10 @@ int main(void) {
 	xTaskCreate(taskPrinter, "taskPrinter", 256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	xTaskCreate(dtaskHardStop, "HardStopTask", 100, NULL, (tskIDLE_PRIORITY + 4UL), NULL); // keep at highest priority!
 	
-	UARTModule_init();
-	GPIO_interrupt_init();
+
 //	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, NULL, (tskIDLE_PRIORITY +2UL), NULL);
 //	xTaskCreate(taskPrinter, "taskPrinter", 256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	
-//	UARTModule_init();
-
 	vTaskStartScheduler();
 
 	for(;;);
