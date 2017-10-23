@@ -27,8 +27,10 @@
 #include "Handles.h"
 #include "sw_btn_interrupts.h"
 #include "Motor.h"
+#include "dtaskMotor.h"
 #include "Parser.h"
 #include "CommandPacket.h"
+#include "PlotterData.h"
 
 
 // TODO: insert other definitions and declarations here
@@ -55,6 +57,11 @@ extern "C" {
 static void prvSetupHardware(void) {
 	SystemCoreClockUpdate();
 	Board_Init();
+	ITM_init();
+	xSemaphoreGive(commonHandles->readyToReceive);					 //This has to be initially available
+
+	UARTModule_init();
+	GPIO_interrupt_init();
 }
 
 
@@ -104,7 +111,7 @@ void dtaskButton(void *pvParameters) {
 
 int main(void) {
 	prvSetupHardware();
-	ITM_init();
+	
 
 	Handles *commonHandles = new Handles;
 	commonHandles->commandQueue_raw = xQueueCreate(1, sizeof(std::string*));
@@ -123,12 +130,9 @@ int main(void) {
 	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, (void*) commonHandles, (tskIDLE_PRIORITY +2UL), NULL);
 	xTaskCreate(taskSendOK, "taskSendOK", 256, (void*) commonHandles, (tskIDLE_PRIORITY + 1UL), NULL);
 	xTaskCreate(dtaskHardStop, "HardStopTask", 100, NULL, (tskIDLE_PRIORITY + 4UL), NULL); // keep at highest priority!
-	
+	xTaskCreate(dtaskMotor, "MotorTask", 150, NULL, (tskIDLE_PRIORITY + 4UL), NULL);
 
-	xSemaphoreGive(commonHandles->readyToReceive);					 //This has to be initially available
 
-	UARTModule_init();
-	GPIO_interrupt_init();
 //	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, NULL, (tskIDLE_PRIORITY +2UL), NULL);
 //	xTaskCreate(taskPrinter, "taskPrinter", 256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	
