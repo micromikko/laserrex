@@ -26,7 +26,7 @@ public:
 	void laserParse(char *c_comstr);
 	void m10Parse(char *c_comstr);
 
-	void debug(const char *str, bool showAll=false);
+	void debug(const std::string stringula, bool showAll=false);
 
 private:
 	CommandPacket *compack;
