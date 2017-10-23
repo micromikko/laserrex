@@ -11,11 +11,13 @@
 #include <string>
 #include "ITM_write.h"
 #include <mutex>
+#include "Handles.h"
 
 
-QueueHandle_t str_queue;
 QueueHandle_t char_queue;
 myMutex serial_guard;
+
+
 
 
 extern "C"
@@ -35,11 +37,11 @@ void UART0_IRQHandler(void) {
 
 
 /*Create queues for messaging characters from UART interrupt to reader task.  Configure UART interrupts.*/
+//Vähän ehkä rumaa tuoda kahvat inittifunktion kautta, refaktoroi paremmaks jos aikaa jää
 void UARTModule_init() {
 	configUARTInterrupt();
 	ITM_init();
 
-	str_queue = xQueueCreate(10, sizeof(std::string*));
 	char_queue = xQueueCreate(1, sizeof(uint32_t));
 }
 
@@ -54,6 +56,7 @@ static void configUARTInterrupt() {
 }
 
 void dtaskUARTReader(void *pvParameters) {
+	Handles *commonHandles = (Handles*) pvParameters;
 
 	while(1) {
 		std::string *str = new std::string("");
@@ -67,25 +70,28 @@ void dtaskUARTReader(void *pvParameters) {
 
 			if(c == '\n' || c == '\r') {
 				/*Prevent race conditions to the COM port by taking a mutex */
-				{
-				std::lock_guard<myMutex> locker(serial_guard);
-				Board_UARTPutSTR("OK\n");
-				}
-				BaseType_t status = xQueueSendToBack(str_queue, &str, portMAX_DELAY);
+				xQueueSendToBack(commonHandles->commandQueue_raw, &str, portMAX_DELAY);
 				break;
 			}
 		}
 	}
 }
 
-void taskPrinter(void *pvParameters) {
-	std::string *str;
+
+
+void taskSendOK(void *pvParameters) {
+	Handles *commonHandles = (Handles*) pvParameters;
 	while(1) {
-		xQueueReceive(str_queue, &str, portMAX_DELAY);
-		ITM_write( (*str).c_str() );
-		delete str;
+		if( xSemaphoreTake(commonHandles->readyToReceive, portMAX_DELAY)  == pdTRUE ) {
+
+			{
+			std::lock_guard<myMutex> locker(serial_guard);
+			Board_UARTPutSTR("OK\n");
+			}
+		}
 	}
 }
+
 
 
 

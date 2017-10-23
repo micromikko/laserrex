@@ -10,7 +10,7 @@
 extern "C" { void UART0_IRQHandler(void); }
 void UARTModule_init();
 void dtaskUARTReader(void *pvParameters);
-void taskPrinter(void *pvParameters);   		//just a temporary one for testing reader functionality. Will be replaced by a write to command queue
+void taskSendOK(void *pvParameters);   		//just a temporary one for testing reader functionality. Will be replaced by a write to command queue
 static void configUARTInterrupt();
 
 
