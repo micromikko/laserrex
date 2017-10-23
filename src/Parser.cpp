@@ -101,11 +101,11 @@ CommandPacket Parser::generalParse(std::string commandString) {
 	return *this->compack;
 }
 
-void Parser::debug(const char *str, bool showAll) {
+void Parser::debug(const std::string stringula, bool showAll) {
 
 		char commandBuffer[200];
 		memset(commandBuffer, 0, sizeof(commandBuffer));
-		strcpy(commandBuffer, str);
+		strcpy(commandBuffer, stringula.c_str());
 
 		*this->compack = this->generalParse(commandBuffer);
 	
