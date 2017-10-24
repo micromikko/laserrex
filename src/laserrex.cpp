@@ -88,10 +88,10 @@ void taskExecute(void *pvParameters) {
 //		sprintf(buf, "GorM: %c, GorMNum: %d, TargetX: %lf, TargetY: %lf, AUXDelay: %ld, TargetPen: %d, TargetLaser: %d\n",
 //				cp.gorm, cp.gormNum, cp.targetX, cp.targetY, cp.auxDelay, cp.targetPen, cp.targetLaser	 );
 //		ITM_write(buf);
-//		delete rawCommand;
+
 //		parsakaali.debug(*rawCommand, true);		// set true or false to see all info in compack or given command
 		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
-
+		delete rawCommand;
 
 		xSemaphoreGive(commonHandles->readyToReceive);
 
