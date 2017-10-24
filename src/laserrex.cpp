@@ -129,7 +129,7 @@ int main(void) {
 	 */
 //	xTaskCreate(dtaskLimit, "dtaskLimit", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 //	xTaskCreate(dtaskButton, "dtaskButton", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
-	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, (void*) commonHandles, (tskIDLE_PRIORITY +2UL), NULL);
+	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 500, (void*) commonHandles, (tskIDLE_PRIORITY +2UL), NULL);
 	xTaskCreate(taskSendOK, "taskSendOK", 256, (void*) commonHandles, (tskIDLE_PRIORITY + 4UL), NULL);
 	xTaskCreate(dtaskHardStop, "HardStopTask", 100, NULL, (tskIDLE_PRIORITY + 4UL), NULL); // keep at highest priority!
 
