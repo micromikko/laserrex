@@ -46,6 +46,7 @@ public:
 
 	// #define STEPS_PER_MM 87.58
 	// SHOULD BE THE SAME, SO
+	double stepsPerMM;
 //	int stepsPerMMX;		// steps
 //	int stepsPerMMY;		// steps
 

@@ -118,6 +118,7 @@ PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouE
 
 	// #define STEPS_PER_MM 87.58
 	// SHOULD BE THE SAME, SO
+	this->stepsPerMM = 87.58; // -.,-.,-.,
 //	int stepsPerMMX;		// steps
 //	int stepsPerMMY;		// steps
 
