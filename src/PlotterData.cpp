@@ -9,39 +9,83 @@
 
 
 
-PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye) {
-	this->currentX = 0;
-	this->currentY = 0;
-
-	switch(kayYouElElEye) {
-		case none:
-			this->currentPenPos = 0;
-			this->currentLaserPos = 0;
-			break;
-		case pen:
-			this->currentPenPos = 130;
-			this->currentLaserPos = 0;
-			break;
-		case laser:
-			this->currentPenPos = 0;
-			this->currentLaserPos = 0;
-			break;
-	}
-
-	this->axisLengthX = 380;
-	this->axisLengthY = 310;
-
-	this->stepCountX = 0;
-	this->stepCountY = 0;
-
-	this->stepsPerMMX = 0;
-	this->stepsPerMMY = 0;
-}
+//PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye) {
+//	switch(kayYouElElEye) {
+//		case none:
+//			this->currentPenPos = 0;
+//			this->currentLaserPos = 0;
+//			break;
+//		case pen:
+//			this->currentPenPos = 130;
+//			this->currentLaserPos = 0;
+//			break;
+//		case laser:
+//			this->currentPenPos = 0;
+//			this->currentLaserPos = 0;
+//			break;
+//	}
+//
+//	this->dirX = false;
+//	this->dirY = false;
+//
+//	this->axisLengthX = 380;		// mm
+//	this->axisLengthY = 310;		// mm
+//
+//	this->stepdelay_min = 0;		//=200;
+//	this->stepdelay_max = 0;		//=1000;
+//
+//	/*
+//	 * Set during caribouration
+//	 */
+//	this->axisStepCountX = 0;		// steps
+//	this->axisStepCountY = 0;		// steps
+//
+//	// #define STEPS_PER_MM 87.58
+//	// SHOULD BE THE SAME, SO
+//	this->stepsPerMM = 0;
+////	int stepsPerMMX;		// steps
+////	int stepsPerMMY;		// steps
+//
+//
+//	/*
+//	 * Current
+//	 */
+//	this->currentX = 0;		// mm
+//	this->currentY = 0;		// mm
+//
+//	this->currentStepsX = 0;		// steps
+//	this->currentStepsY = 0;		// steps
+//
+//	/*
+//	 * CommandPacket
+//	 */
+//	this->gorm = 0;				// G or M
+//	this->gormNum = 0;			// G: 1, 28; M: 1, 4, 10
+//
+//	this->targetX = 0;			// mm
+//	this->targetY = 0;			// mm
+//
+//	this->targetStepsX = 0;	// steps
+//	this->targetStepsY = 0;	// steps
+//
+//	this->targetPen = 0;			// pwm
+//	this->targetLaser = 0;		// pwm
+//
+//	this->auxDelay = 0;			// us
+//
+//	this->dX = 0;				// mm
+//	this->dY = 0;				// mm
+//
+//	this->dStepsX = 0;			// steps
+//	this->dStepsY = 0;			// steps
+//
+//	this->dStepsMax = 0;			// steps
+//
+//	this->stepIntervalX = 0;	// fraction of step
+//	this->stepIntervalY = 0;	// fraction of step
+//}
 
 PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye, int axisX, int axisY) {
-	this->currentX = 0;
-	this->currentY = 0;
-
 	switch(kayYouElElEye) {
 		case none:
 			this->currentPenPos = 0;
@@ -57,26 +101,78 @@ PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouE
 			break;
 	}
 
-	this->axisLengthX = axisX;
-	this->axisLengthY = axisY;
+	this->dirX = false;
+	this->dirY = false;
 
-	this->stepCountX = 0;
-	this->stepCountY = 0;
+	this->axisLengthX = axisX;		// mm
+	this->axisLengthY = axisY;		// mm
 
-	this->stepsPerMMX = 0;
-	this->stepsPerMMY = 0;
+	this->stepdelay_min = 0;		//=200;
+	this->stepdelay_max = 0;		//=1000;
+
+	/*
+	 * Set during caribouration
+	 */
+	this->axisStepCountX = 0;		// steps
+	this->axisStepCountY = 0;		// steps
+
+	// #define STEPS_PER_MM 87.58
+	// SHOULD BE THE SAME, SO
+//	int stepsPerMMX;		// steps
+//	int stepsPerMMY;		// steps
+
+
+	/*
+	 * Current
+	 */
+	this->currentX = 0;		// mm
+	this->currentY = 0;		// mm
+
+	this->currentStepsX = 0;		// steps
+	this->currentStepsY = 0;		// steps
+
+	/*
+	 * CommandPacket
+	 */
+	this->gorm = 0;				// G or M
+	this->gormNum = 0;			// G: 1, 28; M: 1, 4, 10
+
+	this->targetX = 0;			// mm
+	this->targetY = 0;			// mm
+
+	this->targetStepsX = 0;	// steps
+	this->targetStepsY = 0;	// steps
+
+	this->targetPen = 0;			// pwm
+	this->targetLaser = 0;		// pwm
+
+	this->auxDelay = 0;			// us
+
+	this->dX = 0;				// mm
+	this->dY = 0;				// mm
+
+	this->dStepsX = 0;			// steps
+	this->dStepsY = 0;			// steps
+
+	this->dStepsMax = 0;			// steps
+
+	this->stepIntervalX = 0;	// fraction of step
+	this->stepIntervalY = 0;	// fraction of step
 }
 
 PlotterData::~PlotterData() {
 	// TODO Auto-generated destructor stub
 }
 
-void PlotterData::calculateStepsPerMMX() {
-	this->stepsPerMMX = this->stepCountX / this->axisLengthX;
-}
+void PlotterData::calculateStepsPerMM() {
+	int stepsPerMMX = this->axisStepCountX / this->axisLengthX;
+	int stepsPerMMY = this->axisStepCountY / this->axisLengthY;
 
-void PlotterData::calculateStepsPerMMY() {
-	this->stepsPerMMX = this->stepCountY / this->axisLengthY;
+	if(stepsPerMMX == stepsPerMMY) {
+		this->stepsPerMM = stepsPerMMX;
+	} else {
+		while(1);
+	}
 }
 
 void PlotterData::resetCompack() {
@@ -90,3 +186,8 @@ void PlotterData::resetCompack() {
 	this->targetPen = 0;
 	this->targetLaser = 0;
 }
+
+int PlotterData::convertToSteps(const double before) {
+	return before * this->stepsPerMM;
+}
+

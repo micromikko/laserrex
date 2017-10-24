@@ -22,13 +22,15 @@ public:
 		laser
 	};
 
-	PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye=none);
-	PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye, int axisX, int axisY);
-//	PlotterData(int jaska);
-//	PlotterData(int jaska, int axisX, int axisY);
+//	PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye=none);
+	PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye = none, int axisX=380, int axisY=310);
+
 	virtual ~PlotterData();
 
 	int plotterMode;
+
+	bool dirX;
+	bool dirY;
 
 	int axisLengthX;		// mm
 	int axisLengthY;		// mm
@@ -42,8 +44,11 @@ public:
 	int axisStepCountX;		// steps
 	int axisStepCountY;		// steps
 
-	int stepsPerMMX;		// steps
-	int stepsPerMMY;		// steps
+	// #define STEPS_PER_MM 87.58
+	// SHOULD BE THE SAME, SO
+//	int stepsPerMMX;		// steps
+//	int stepsPerMMY;		// steps
+
 
 	/*
 	 * Current
@@ -80,9 +85,13 @@ public:
 	int dStepsX;			// steps
 	int dStepsY;			// steps
 
-	void calculateStepsPerMMX();
-	void calculateStepsPerMMY();
-	void convertToSteps(double mm);
+	int dStepsMax;			// steps
+
+	double stepIntervalX;	// fraction of step
+	double stepIntervalY;	// fraction of step
+
+	void calculateStepsPerMM();
+	int convertToSteps(const double before);
 
 //	CommandPacket *compack;
 	void resetCompack();

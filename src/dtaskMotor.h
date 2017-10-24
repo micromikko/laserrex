@@ -14,9 +14,7 @@
 //xSemaphoreHandle motorSemaphore;
 
 //extern "C" { void UART0_IRQHandler(void); }
-extern "C" { void RIT_IRQHandler(void); }
-void RIT_start(int count, int us);
-void dtaskMotor(void *pvParameters);
-void dtaskMotor_init();
+
+
 
 #endif /* DTASKMOTOR_H_ */

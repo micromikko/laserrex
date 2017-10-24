@@ -18,32 +18,27 @@
 #include "queue.h"
 #include "semphr.h"
 
-
-#include "DigitalIoPin.h"
-#include "myMutex.h"
 #include "ITM_write.h"
+#include "myMutex.h"
+#include "DigitalIoPin.h"
 
-#include "uart_module.h"
 #include "Handles.h"
+#include "uart_module.h"
 #include "sw_btn_interrupts.h"
-#include "Motor.h"
-#include "dtaskMotor.h"
-#include "Parser.h"
-#include "CommandPacket.h"
-#include "PlotterData.h"
 
+#include "PlotterData.h"
+#include "Driver.h"
+#include "Parser.h"
+
+
+/* delete*/
+//#include "dtaskMotor.h"
+//#include "CommandPacket.h"
+//#include "Motor.h"
 
 // TODO: insert other definitions and declarations here
 
-/*
-myMutex exampleMutex;
-QueueHandle_t exampleQueue;
-xSemaphoreHandle exampleSemaphore;
 // eventgroup?
-*/
-
-
-
 
 
 extern "C" {
@@ -65,51 +60,38 @@ static void prvSetupHardware(void) {
 
 
 
-void taskExecute(void *pvParameters) {
-	Handles *commonHandles = (Handles*) pvParameters;
-	Parser parsakaali;
-	std::string *rawCommand;
-//	const char *debugCommand = "G28\r\n";		//enter gcode
-//	parsakaali.debug(debugCommand, true);		// set true or false to see all info in compack or given command
-	for(;;) {
-//		status = xQueueSendToFront(commandQueue_parsed, &commandBuffer, 0);
-
-		/*
-		 * read command from queue
-		 * parse command and assign parts to compack
-		 * pass info from compack to motors, pen or laser
-		 */
-		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
-		CommandPacket cp = parsakaali.generalParse(*rawCommand);
-
-		/*For testing, print command packet content to ITM console*/
-//		char buf[200];
+//void taskExecute(void *pvParameters) {
+//	Handles *commonHandles = (Handles*) pvParameters;
+//	Parser parsakaali;
+//	std::string *rawCommand;
+////	const char *debugCommand = "G28\r\n";		//enter gcode
+////	parsakaali.debug(debugCommand, true);		// set true or false to see all info in compack or given command
+//	for(;;) {
+////		status = xQueueSendToFront(commandQueue_parsed, &commandBuffer, 0);
 //
-//		sprintf(buf, "GorM: %c, GorMNum: %d, TargetX: %lf, TargetY: %lf, AUXDelay: %ld, TargetPen: %d, TargetLaser: %d\n",
-//				cp.gorm, cp.gormNum, cp.targetX, cp.targetY, cp.auxDelay, cp.targetPen, cp.targetLaser	 );
-//		ITM_write(buf);
-//		delete rawCommand;
-//		parsakaali.debug(*rawCommand, true);		// set true or false to see all info in compack or given command
-		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
-
-
-		xSemaphoreGive(commonHandles->readyToReceive);
-
-	}
-}
-
-void dtaskLimit(void *pvParameters) {
-
-	for(;;) {
-		
-	}
-}
-
-void dtaskButton(void *pvParameters) {
-	
-	for(;;) {
-	}
-}
+//		/*
+//		 * read command from queue
+//		 * parse command and assign parts to compack
+//		 * pass info from compack to motors, pen or laser
+//		 */
+//		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
+//		CommandPacket cp = parsakaali.generalParse(*rawCommand);
+//
+//		/*For testing, print command packet content to ITM console*/
+////		char buf[200];
+////
+////		sprintf(buf, "GorM: %c, GorMNum: %d, TargetX: %lf, TargetY: %lf, AUXDelay: %ld, TargetPen: %d, TargetLaser: %d\n",
+////				cp.gorm, cp.gormNum, cp.targetX, cp.targetY, cp.auxDelay, cp.targetPen, cp.targetLaser	 );
+////		ITM_write(buf);
+////		delete rawCommand;
+////		parsakaali.debug(*rawCommand, true);		// set true or false to see all info in compack or given command
+//		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
+//
+//
+//		xSemaphoreGive(commonHandles->readyToReceive);
+//
+//	}
+//}
 
 int main(void) {
 	prvSetupHardware();
@@ -123,25 +105,22 @@ int main(void) {
 	 * tasks
 	 */
 	xTaskCreate(taskExecute, "taskExecute", 500, (void*) commonHandles, (tskIDLE_PRIORITY + 1UL), NULL);
+	xTaskCreate(taskSendOK, "taskSendOK", 256, (void*) commonHandles, (tskIDLE_PRIORITY + 4UL), NULL);
 	
 	/*
 	 * dtasks
 	 */
 //	xTaskCreate(dtaskLimit, "dtaskLimit", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 //	xTaskCreate(dtaskButton, "dtaskButton", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
-	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, (void*) commonHandles, (tskIDLE_PRIORITY +2UL), NULL);
-	xTaskCreate(taskSendOK, "taskSendOK", 256, (void*) commonHandles, (tskIDLE_PRIORITY + 4UL), NULL);
-	xTaskCreate(dtaskHardStop, "HardStopTask", 100, NULL, (tskIDLE_PRIORITY + 4UL), NULL); // keep at highest priority!
+	xTaskCreate(dtaskUARTReader, "UARTReaderdTask", 256, (void*) commonHandles, (tskIDLE_PRIORITY +3UL), NULL);
+	xTaskCreate(dtaskHardStop, "HardStopdTask", 100, NULL, (tskIDLE_PRIORITY + 4UL), NULL); // keep at highest priority!
+	xTaskCreate(dtaskMotor, "motordTask", 200, NULL, (tskIDLE_PRIORITY + 2UL), NULL); // keep at highest priority!
 
-
-	xSemaphoreGive(commonHandles->readyToReceive);					 //This has to be initially available
+	xSemaphoreGive(commonHandles->readyToReceive);			 //This has to be initially available
 
 	UARTModule_init();
 	GPIO_interrupt_init();
-//	xTaskCreate(dtaskUARTReader, "dtaskUARTReader", 256, NULL, (tskIDLE_PRIORITY +2UL), NULL);
-//	xTaskCreate(taskPrinter, "taskPrinter", 256, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
-	
-//	UARTModule_init();
+	RIT_init();
 
 	vTaskStartScheduler();
 
