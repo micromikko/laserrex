@@ -28,28 +28,64 @@ public:
 //	PlotterData(int jaska, int axisX, int axisY);
 	virtual ~PlotterData();
 
-
-
 	int plotterMode;
 
-	double currentX;
-	double currentY;
+	int axisLengthX;		// mm
+	int axisLengthY;		// mm
 
-	int currentPenPos;
-	int currentLaserPos;
+	int stepdelay_min;		//=200;
+	int stepdelay_max;		//=1000;
 
-	int axisLengthX;
-	int axisLengthY;
+	/*
+	 * Set during caribouration
+	 */
+	int axisStepCountX;		// steps
+	int axisStepCountY;		// steps
 
-	int stepCountX;
-	int stepCountY;
+	int stepsPerMMX;		// steps
+	int stepsPerMMY;		// steps
 
-	int stepsPerMMX;
-	int stepsPerMMY;
+	/*
+	 * Current
+	 */
+	double currentX;		// mm
+	double currentY;		// mm
 
-	void setStepsPerMMX();
-	void setStepsPerMMY();
+	int currentStepsX;		// steps
+	int currentStepsY;		// steps
 
+	int currentPenPos;		// pwm
+	int currentLaserPos;	// pwm
+
+	/*
+	 * CommandPacket
+	 */
+	char gorm;				// G or M
+	int gormNum;			// G: 1, 28; M: 1, 4, 10
+
+	double targetX;			// mm
+	double targetY;			// mm
+
+	double targetStepsX;	// steps
+	double targetStepsY;	// steps
+
+	int targetPen;			// pwm
+	int targetLaser;		// pwm
+
+	long auxDelay;			// us
+
+	double dX;				// mm
+	double dY;				// mm
+
+	int dStepsX;			// steps
+	int dStepsY;			// steps
+
+	void calculateStepsPerMMX();
+	void calculateStepsPerMMY();
+	void convertToSteps(double mm);
+
+//	CommandPacket *compack;
+	void resetCompack();
 private:
 
 };

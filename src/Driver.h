@@ -8,7 +8,8 @@
 #ifndef DRIVER_H_
 #define DRIVER_H_
 
-class Driver {
-};
+void taskExecute(void *pvParameters);
+void calculateDrive(CommandPacket &compack, PlotterData &plotdat);
+void justDrive();
 
 #endif /* DRIVER_H_ */

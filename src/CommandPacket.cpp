@@ -9,16 +9,29 @@
 #include "CommandPacket.h"
 
 CommandPacket::CommandPacket() {
+
+	/*
+	 * All gcodes
+	 */
 	this->gorm = 0;
 	this->gormNum = 0;
 
+	/*
+	 * G1
+	 */
 	this->targetX = 0;
 	this->targetY = 0;
 	this->auxDelay = 0;
 
+	/*
+	 * M1
+	 */
 	this->targetPen = 0;
-	this->targetLaser = 0;
 
+	/*
+	 * M4
+	 */
+	this->targetLaser = 0;
 }
 
 CommandPacket::~CommandPacket() {

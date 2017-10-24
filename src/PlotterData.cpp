@@ -28,8 +28,8 @@ PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouE
 			break;
 	}
 
-	this->axisLengthX = 0;
-	this->axisLengthY = 0;
+	this->axisLengthX = 380;
+	this->axisLengthY = 310;
 
 	this->stepCountX = 0;
 	this->stepCountY = 0;
@@ -71,10 +71,22 @@ PlotterData::~PlotterData() {
 	// TODO Auto-generated destructor stub
 }
 
-void PlotterData::setStepsPerMMX() {
+void PlotterData::calculateStepsPerMMX() {
 	this->stepsPerMMX = this->stepCountX / this->axisLengthX;
 }
 
-void PlotterData::setStepsPerMMY() {
+void PlotterData::calculateStepsPerMMY() {
 	this->stepsPerMMX = this->stepCountY / this->axisLengthY;
+}
+
+void PlotterData::resetCompack() {
+	this->gorm = 0;
+	this->gormNum = 0;
+
+	this->targetX = 0;
+	this->targetY = 0;
+	this->auxDelay = 0;
+
+	this->targetPen = 0;
+	this->targetLaser = 0;
 }
