@@ -17,6 +17,7 @@
 QueueHandle_t char_queue;
 myMutex serial_guard;
 
+#define INT_MASK  (uint32_t)(1 << 0)
 
 
 
@@ -32,6 +33,7 @@ void UART0_IRQHandler(void) {
 
 	xQueueSendToBackFromISR(char_queue, &c, &xHigherPriorityTaskWoken );
 	portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
+	Chip_UART_IntDisable(LPC_USART0, INT_MASK);
 }
 }
 
@@ -66,7 +68,8 @@ void dtaskUARTReader(void *pvParameters) {
 			xQueueReceive(char_queue, &c, portMAX_DELAY);
 
 			(*str).push_back((char)c);
-
+			Chip_UART_IntEnable(LPC_USART0, INT_MASK);
+			
 			if(c == '\n' || c == '\r') {
 				/*Prevent race conditions to the COM port by taking a mutex */
 				xQueueSendToBack(commonHandles->commandQueue_raw, &str, portMAX_DELAY);
