@@ -22,34 +22,80 @@ public:
 		laser
 	};
 
-	PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye=none);
-	PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye, int axisX, int axisY);
-//	PlotterData(int jaska);
-//	PlotterData(int jaska, int axisX, int axisY);
+//	PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye=none);
+	PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye = none, int axisX=380, int axisY=310);
+
 	virtual ~PlotterData();
-
-
 
 	int plotterMode;
 
-	double currentX;
-	double currentY;
+	bool dirX;
+	bool dirY;
 
-	int currentPenPos;
-	int currentLaserPos;
+	int axisLengthX;		// mm
+	int axisLengthY;		// mm
 
-	int axisLengthX;
-	int axisLengthY;
+	int stepdelay_min;		//=200;
+	int stepdelay_max;		//=1000;
 
-	int stepCountX;
-	int stepCountY;
+	/*
+	 * Set during caribouration
+	 */
+	int axisStepCountX;		// steps
+	int axisStepCountY;		// steps
 
-	int stepsPerMMX;
-	int stepsPerMMY;
+	// #define STEPS_PER_MM 87.58
+	// SHOULD BE THE SAME, SO
+	double stepsPerMM;
+//	int stepsPerMMX;		// steps
+//	int stepsPerMMY;		// steps
 
-	void setStepsPerMMX();
-	void setStepsPerMMY();
 
+	/*
+	 * Current
+	 */
+	double currentX;		// mm
+	double currentY;		// mm
+
+	int currentStepsX;		// steps
+	int currentStepsY;		// steps
+
+	int currentPenPos;		// pwm
+	int currentLaserPos;	// pwm
+
+	/*
+	 * CommandPacket
+	 */
+	char gorm;				// G or M
+	int gormNum;			// G: 1, 28; M: 1, 4, 10
+
+	double targetX;			// mm
+	double targetY;			// mm
+
+	double targetStepsX;	// steps
+	double targetStepsY;	// steps
+
+	int targetPen;			// pwm
+	int targetLaser;		// pwm
+
+	long auxDelay;			// us
+
+	double dX;				// mm
+	double dY;				// mm
+
+	int dStepsX;			// steps
+	int dStepsY;			// steps
+
+	int dStepsMax;			// steps
+
+	double stepIntervalX;	// fraction of step
+	double stepIntervalY;	// fraction of step
+
+	void calculateStepsPerMM();
+	int convertToSteps(const double before);
+
+//	CommandPacket *compack;
+	void resetCompack();
 private:
 
 };

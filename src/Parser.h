@@ -9,7 +9,7 @@
 #define PARSER_H_
 
 #include <string>
-#include "CommandPacket.h"
+#include "PlotterData.h"
 
 
 class Parser {
@@ -17,19 +17,18 @@ public:
 	Parser();
 	virtual ~Parser();
 
-	CommandPacket generalParse(const std::string commandString);
-	void gcodeParse(char *c_comstr);
-	void mcodeParse(char *c_comstr);
-	void xyParse(char *c_comstr);
+	void generalParse(PlotterData &plotdat, const std::string commandString);
+	void gcodeParse(PlotterData &plotdat, char *c_comstr);
+	void mcodeParse(PlotterData &plotdat, char *c_comstr);
+	void xyParse(PlotterData &plotdat, char *c_comstr);
 
-	void penParse(char *c_comstr);
-	void laserParse(char *c_comstr);
-	void m10Parse(char *c_comstr);
+	void penParse(PlotterData &plotdat, char *c_comstr);
+	void laserParse(PlotterData &plotdat, char *c_comstr);
+	void m10Parse(PlotterData &plotdat, char *c_comstr);
 
-	void debug(std::string stringula, bool showAll=false);
+	void debug(PlotterData &plotdat, std::string stringula, bool showAll=false);
 
 private:
-	CommandPacket *compack;
 
 };
 
