@@ -13,7 +13,7 @@
 #include "semphr.h"
 
 typedef struct {
-	QueueHandle_t commandQueue_raw;		//queue of length 1 to communicate raw input from UART to command parser
+	QueueHandle_t commandQueue_raw;			//queue of length 1 to communicate raw input from UART to command parser
 //	QueueHandle_t commandQueue_parsed;		//queue for CommandPackets
 	SemaphoreHandle_t readyToReceive;		//semaphore to signal UART task that there is room in the command queue, we can send "OK" back to mDraw
 

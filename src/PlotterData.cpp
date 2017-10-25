@@ -182,20 +182,10 @@ void PlotterData::resetCompack() {
 
 	this->targetX = 0;
 	this->targetY = 0;
-	this->targetStepsX = 0;
-	this->targetStepsY = 0;
-	this->dX = 0;
-	this->dY = 0;
-	this->dStepsX = 0;
-	this->dStepsY = 0;
-	this->dStepsMax = 0;
-	this->stepIntervalX = 0;
-	this->stepIntervalY = 0;
 	this->auxDelay = 0;
 
-	// -.,-.,-.,
-//	this->targetPen = 0;
-//	this->targetLaser = 0;
+	this->targetPen = 0;
+	this->targetLaser = 0;
 }
 
 int PlotterData::convertToSteps(const double before) {

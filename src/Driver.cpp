@@ -21,9 +21,7 @@
 xSemaphoreHandle sbRIT;
 xSemaphoreHandle motorSemaphore;
 volatile uint32_t RIT_count;
-volatile uint8_t kumpi;
-volatile bool xuunta;
-volatile bool yuunta;
+uint8_t kumpi;
 
 extern "C" {
 	void RIT_IRQHandler(void) {
@@ -90,23 +88,21 @@ void taskExecute(void *pvParameters) {
 	Handles *commonHandles = (Handles*) pvParameters;
 	PlotterData plotdat;
 	Parser parsakaali;
-
+	std::string *rawCommand;
 //	BaseType_t status;
 
 	// caribourate()
 	// init()
 	for(;;) {
-		std::string *rawCommand;
+
 		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
 		parsakaali.generalParse(plotdat, *rawCommand);
-		parsakaali.debug(plotdat, *rawCommand, false);
-
-		calculateDrive(plotdat);
-		justDrive(plotdat);
-//				parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
-		plotdat.resetCompack(); // -.,-.,-.,
 		delete rawCommand;
+//		calculateDrive(plotdat);
+//		justDrive(plotdat);
 
+		//		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
+		plotdat.resetCompack(); // -.,-.,-.,
 		xSemaphoreGive(commonHandles->readyToReceive);
 	}
 }
@@ -118,30 +114,24 @@ void caribourate(PlotterData &pd) {
 //	Handles *commonHandles = (Handles*) pvParameters;
 //	PlotterData plotdat(plotdat.pen, 380, 310);
 //	Parser parsakaali;
-//	std::string *rawCommand = new std::string("G1 X30 Y30 A0");
+//	std::string *rawCommand = new std::string("G1 X-50 Y-50 A0");
 //	BaseType_t status;
 //
 ////	 caribourate(plotdat);
 //	// init()
 //	parsakaali.generalParse(plotdat, *rawCommand);
-//	parsakaali.debug(plotdat, *rawCommand, false);
 //	calculateDrive(plotdat);
 //	justDrive(plotdat);
-////	plotdat.resetCompack();
 //
-//	std::string *com2 = new std::string("G1 X0 Y-20 A0");
-//	parsakaali.generalParse(plotdat, *com2);
-//	parsakaali.debug(plotdat, *com2, false);
-//	calculateDrive(plotdat);
-//	justDrive(plotdat);
-////	plotdat.resetCompack();
-//
-//	std::string *com3 = new std::string("G1 X30 Y0 A0");
-//	parsakaali.generalParse(plotdat, *com3);
-//	parsakaali.debug(plotdat, *com3, false);
-//	calculateDrive(plotdat);
-//	justDrive(plotdat);
-////	plotdat.resetCompack();
+////	std::string *com2 = new std::string("G1 X0 Y50 A0");
+////	parsakaali.generalParse(plotdat, *com2);
+////	calculateDrive(plotdat);
+////	justDrive(plotdat);
+////
+////	std::string *com3 = new std::string("G1 X50 Y50 A0");
+////	parsakaali.generalParse(plotdat, *com3);
+////	calculateDrive(plotdat);
+////	justDrive(plotdat);
 ////	parsakaali.debug(plotdat, *rawCommand, false);		// set true or false to see all info in compack or given command
 ////	plotdat.resetCompack(); // -.,-.,-.,
 ////	RIT_count = 0;
@@ -252,11 +242,9 @@ void justDrive(PlotterData &pd) {
 
 			if(countX >= 1) {
 				if(pd.dStepsX > 0) {
-//					pd.dirX = true;
-					xuunta = true;
+					pd.dirX = true;
 				} else {
-//					pd.dirX = false;
-					xuunta = false;
+					pd.dirX = false;
 				}
 
 				if(pd.dStepsX > 0) {
@@ -265,7 +253,7 @@ void justDrive(PlotterData &pd) {
 					pd.currentStepsX -= 1;
 				}
 				kumpi = 1;
-				RIT_start(1, 750);
+				RIT_start(1, 1000);
 				countX -= 1;
 			}
 		}
@@ -275,11 +263,9 @@ void justDrive(PlotterData &pd) {
 
 			if(countY >= 1) {
 				if(pd.dStepsY > 0) {
-//					pd.dirY = true;
-					yuunta = true;
+					pd.dirY = true;
 				} else {
-//					pd.dirY = false;
-					yuunta = false;
+					pd.dirY = false;
 				}
 
 				if(pd.dStepsY > 0) {
@@ -288,8 +274,8 @@ void justDrive(PlotterData &pd) {
 					pd.currentStepsY -= 1;
 				}
 				kumpi = 2;
-				RIT_start(1, 750);
-				countY -= 1;
+				RIT_start(1, 1000);
+				countX -= 1;
 			}
 		}
 		kumpi = 0;
@@ -353,7 +339,6 @@ void justDrive(PlotterData &pd) {
 	pd.currentStepsY = pd.targetStepsY;
 	pd.currentX = pd.targetX;
 	pd.currentY = pd.targetY;
-	pd.resetCompack();
 }
 
 
@@ -370,12 +355,10 @@ void dtaskMotor(void *pvParameters) {
 
 		switch(kumpi) {
 		case 1:
-			dirPinX.write(xuunta);
 			stepPinX.write(true);
 			stepPinX.write(false);
 			break;
 		case 2:
-			dirPinY.write(yuunta);
 			stepPinY.write(true);
 			stepPinY.write(false);
 			break;
