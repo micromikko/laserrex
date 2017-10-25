@@ -89,6 +89,7 @@ void taskSendOK(void *pvParameters) {
 			{
 			std::lock_guard<myMutex> locker(serial_guard);
 			Board_UARTPutSTR("OK\n");
+			ITM_write("OK\r\n"); // -.,-.,-.,
 			}
 			vTaskDelay(10);
 		}

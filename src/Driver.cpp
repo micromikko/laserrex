@@ -21,7 +21,9 @@
 xSemaphoreHandle sbRIT;
 xSemaphoreHandle motorSemaphore;
 volatile uint32_t RIT_count;
-uint8_t kumpi;
+volatile uint8_t kumpi;
+volatile bool xuunta;
+volatile bool yuunta;
 
 extern "C" {
 	void RIT_IRQHandler(void) {
@@ -84,69 +86,78 @@ void RIT_init() {
 	motorSemaphore = xSemaphoreCreateBinary();
 }
 
-//void taskExecute(void *pvParameters) {
-//	Handles *commonHandles = (Handles*) pvParameters;
-//	PlotterData plotdat;
-//	Parser parsakaali;
-//	std::string *rawCommand;
-////	BaseType_t status;
-//
-//	// caribourate()
-//	// init()
-//	for(;;) {
-//
-//		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
-//		parsakaali.generalParse(plotdat, *rawCommand);
-//		calculateDrive(plotdat);
-////		justDrive(plotdat);
-//
-//		//		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
-//		plotdat.resetCompack(); // -.,-.,-.,
-//		xSemaphoreGive(commonHandles->readyToReceive);
-//	}
-//}
+void taskExecute(void *pvParameters) {
+	Handles *commonHandles = (Handles*) pvParameters;
+	PlotterData plotdat;
+	Parser parsakaali;
+
+//	BaseType_t status;
+
+	// caribourate()
+	// init()
+	for(;;) {
+		std::string *rawCommand;
+		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
+		parsakaali.generalParse(plotdat, *rawCommand);
+		parsakaali.debug(plotdat, *rawCommand, false);
+
+		calculateDrive(plotdat);
+		justDrive(plotdat);
+//				parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
+		plotdat.resetCompack(); // -.,-.,-.,
+		delete rawCommand;
+
+		xSemaphoreGive(commonHandles->readyToReceive);
+	}
+}
 void caribourate(PlotterData &pd) {
 
 }
 
-void taskExecute(void *pvParameters) {
-	Handles *commonHandles = (Handles*) pvParameters;
-	PlotterData plotdat(plotdat.pen, 380, 310);
-	Parser parsakaali;
-	std::string *rawCommand = new std::string("G1 X-50 Y-50 A0");
-	BaseType_t status;
-
-//	 caribourate(plotdat);
-	// init()
-	parsakaali.generalParse(plotdat, *rawCommand);
-	calculateDrive(plotdat);
-	justDrive(plotdat);
-
-//	std::string *com2 = new std::string("G1 X0 Y50 A0");
-//	parsakaali.generalParse(plotdat, *com2);
-//	calculateDrive(plotdat);
-//	justDrive(plotdat);
+//void taskExecute(void *pvParameters) {
+//	Handles *commonHandles = (Handles*) pvParameters;
+//	PlotterData plotdat(plotdat.pen, 380, 310);
+//	Parser parsakaali;
+//	std::string *rawCommand = new std::string("G1 X30 Y30 A0");
+//	BaseType_t status;
 //
-//	std::string *com3 = new std::string("G1 X50 Y50 A0");
-//	parsakaali.generalParse(plotdat, *com3);
+////	 caribourate(plotdat);
+//	// init()
+//	parsakaali.generalParse(plotdat, *rawCommand);
+//	parsakaali.debug(plotdat, *rawCommand, false);
 //	calculateDrive(plotdat);
 //	justDrive(plotdat);
-//	parsakaali.debug(plotdat, *rawCommand, false);		// set true or false to see all info in compack or given command
-//	plotdat.resetCompack(); // -.,-.,-.,
-//	RIT_count = 0;
-	ITM_write("VALMIS\r\n");
-	for(;;) {
-
-//		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
-//		parsakaali.generalParse(plotdat, *rawCommand);
-//		calculateDrive(plotdat);
-//		justDrive(plotdat);
-////		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
-//		plotdat.resetCompack(); // -.,-.,-.,
-//		RIT_count = 0;
-//		xSemaphoreGive(commonHandles->readyToReceive);
-	}
-}
+////	plotdat.resetCompack();
+//
+//	std::string *com2 = new std::string("G1 X0 Y-20 A0");
+//	parsakaali.generalParse(plotdat, *com2);
+//	parsakaali.debug(plotdat, *com2, false);
+//	calculateDrive(plotdat);
+//	justDrive(plotdat);
+////	plotdat.resetCompack();
+//
+//	std::string *com3 = new std::string("G1 X30 Y0 A0");
+//	parsakaali.generalParse(plotdat, *com3);
+//	parsakaali.debug(plotdat, *com3, false);
+//	calculateDrive(plotdat);
+//	justDrive(plotdat);
+////	plotdat.resetCompack();
+////	parsakaali.debug(plotdat, *rawCommand, false);		// set true or false to see all info in compack or given command
+////	plotdat.resetCompack(); // -.,-.,-.,
+////	RIT_count = 0;
+//	ITM_write("VALMIS\r\n");
+//	for(;;) {
+//
+////		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
+////		parsakaali.generalParse(plotdat, *rawCommand);
+////		calculateDrive(plotdat);
+////		justDrive(plotdat);
+//////		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
+////		plotdat.resetCompack(); // -.,-.,-.,
+////		RIT_count = 0;
+////		xSemaphoreGive(commonHandles->readyToReceive);
+//	}
+//}
 
 void calculateDrive(PlotterData &pd) {
 	ITM_write("HEI HOI\r\n");
@@ -241,9 +252,11 @@ void justDrive(PlotterData &pd) {
 
 			if(countX >= 1) {
 				if(pd.dStepsX > 0) {
-					pd.dirX = true;
+//					pd.dirX = true;
+					xuunta = true;
 				} else {
-					pd.dirX = false;
+//					pd.dirX = false;
+					xuunta = false;
 				}
 
 				if(pd.dStepsX > 0) {
@@ -252,7 +265,7 @@ void justDrive(PlotterData &pd) {
 					pd.currentStepsX -= 1;
 				}
 				kumpi = 1;
-				RIT_start(1, 1000);
+				RIT_start(1, 750);
 				countX -= 1;
 			}
 		}
@@ -262,9 +275,11 @@ void justDrive(PlotterData &pd) {
 
 			if(countY >= 1) {
 				if(pd.dStepsY > 0) {
-					pd.dirY = true;
+//					pd.dirY = true;
+					yuunta = true;
 				} else {
-					pd.dirY = false;
+//					pd.dirY = false;
+					yuunta = false;
 				}
 
 				if(pd.dStepsY > 0) {
@@ -273,8 +288,8 @@ void justDrive(PlotterData &pd) {
 					pd.currentStepsY -= 1;
 				}
 				kumpi = 2;
-				RIT_start(1, 1000);
-				countX -= 1;
+				RIT_start(1, 750);
+				countY -= 1;
 			}
 		}
 		kumpi = 0;
@@ -338,6 +353,7 @@ void justDrive(PlotterData &pd) {
 	pd.currentStepsY = pd.targetStepsY;
 	pd.currentX = pd.targetX;
 	pd.currentY = pd.targetY;
+	pd.resetCompack();
 }
 
 
@@ -354,10 +370,12 @@ void dtaskMotor(void *pvParameters) {
 
 		switch(kumpi) {
 		case 1:
+			dirPinX.write(xuunta);
 			stepPinX.write(true);
 			stepPinX.write(false);
 			break;
 		case 2:
+			dirPinY.write(yuunta);
 			stepPinY.write(true);
 			stepPinY.write(false);
 			break;
