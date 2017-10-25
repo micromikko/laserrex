@@ -29,6 +29,7 @@
 #include "PlotterData.h"
 #include "Driver.h"
 #include "Parser.h"
+#include "Servo.h"
 
 
 /* delete*/
