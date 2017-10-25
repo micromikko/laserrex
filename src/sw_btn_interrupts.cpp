@@ -13,6 +13,14 @@
 
 SemaphoreHandle_t limit_sem;
 
+DigitalIoPin sw1(0, 8, DigitalIoPin::pullup, true);
+DigitalIoPin sw2(1, 6, DigitalIoPin::pullup, true);
+DigitalIoPin x1d(0, 29, DigitalIoPin::pullup, true);
+DigitalIoPin x2(0, 9, DigitalIoPin::pullup, true);
+DigitalIoPin y1(1, 3, DigitalIoPin::pullup, true);
+DigitalIoPin y2(0, 0, DigitalIoPin::pullup, true);
+
+
 extern "C" {
 void PIN_INT0_IRQHandler(void) {
 	//
@@ -89,27 +97,6 @@ void GPIO_interrupt_init(void) {
 	limit_sem = xSemaphoreCreateBinary();
 
 	/* Sets port, pin and interrupt channel numbers for all switches and buttons to be used */
-
-	/* kisko / onboard napit */
-//	uint8_t x1_register = 0;
-//	uint8_t x1_port = 0;
-//	uint8_t x1_pin = 27;
-//
-//	uint8_t x2_register = 1;
-//	uint8_t x2_port = 0;
-//	uint8_t x2_pin = 28;
-//
-//	uint8_t sw1_register = 4;
-//	uint8_t sw1_port = 0;
-//	uint8_t sw1_pin = 17;
-//
-//	uint8_t sw2_register = 5;
-//	uint8_t sw2_port = 1;
-//	uint8_t sw2_pin = 9;
-
-	// TODO: muista valita oikeet jutut
-
-	/* oikee laite */
 	uint8_t x1_register = 0;
 	uint8_t x1_port = 0;
 	uint8_t x1_pin = 29;
@@ -132,12 +119,12 @@ void GPIO_interrupt_init(void) {
 
 	uint8_t sw2_register = 5;
 	uint8_t sw2_port = 1;
-	uint8_t sw2_pin = 8;
+	uint8_t sw2_pin = 6;
 
-	/* Bundles all registers into one big bitwise ORed uint8_t for when
+	/* Bundles all registers into one bitwise ORed uint8_t for when
 	 * we need to use a bitmask for all of them */
-	uint8_t all_registers = PININTCH(x1_register) | PININTCH(x2_register)/* | PININTCH(y1_register)
-			| PININTCH(y2_register) */| PININTCH(sw1_register) | PININTCH(sw2_register);
+	uint8_t all_registers = PININTCH(x1_register) | PININTCH(x2_register) | PININTCH(y1_register)
+			| PININTCH(y2_register) | PININTCH(sw1_register) | PININTCH(sw2_register);
 
 	/* Interrupt priority number for all hard stop interrupts */
 	uint32_t hardstop_interrupt_priority = 1;
