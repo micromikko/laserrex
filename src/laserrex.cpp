@@ -52,46 +52,8 @@ extern "C" {
 static void prvSetupHardware(void) {
 	SystemCoreClockUpdate();
 	Board_Init();
-//	ITM_init();
-
-//	UARTModule_init();
-//	GPIO_interrupt_init();
 }
 
-
-
-//void taskExecute(void *pvParameters) {
-//	Handles *commonHandles = (Handles*) pvParameters;
-//	Parser parsakaali;
-//	std::string *rawCommand;
-////	const char *debugCommand = "G28\r\n";		//enter gcode
-////	parsakaali.debug(debugCommand, true);		// set true or false to see all info in compack or given command
-//	for(;;) {
-////		status = xQueueSendToFront(commandQueue_parsed, &commandBuffer, 0);
-//
-//		/*
-//		 * read command from queue
-//		 * parse command and assign parts to compack
-//		 * pass info from compack to motors, pen or laser
-//		 */
-//		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
-//		CommandPacket cp = parsakaali.generalParse(*rawCommand);
-//
-//		/*For testing, print command packet content to ITM console*/
-////		char buf[200];
-////
-////		sprintf(buf, "GorM: %c, GorMNum: %d, TargetX: %lf, TargetY: %lf, AUXDelay: %ld, TargetPen: %d, TargetLaser: %d\n",
-////				cp.gorm, cp.gormNum, cp.targetX, cp.targetY, cp.auxDelay, cp.targetPen, cp.targetLaser	 );
-////		ITM_write(buf);
-////		delete rawCommand;
-////		parsakaali.debug(*rawCommand, true);		// set true or false to see all info in compack or given command
-//		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
-//
-//
-//		xSemaphoreGive(commonHandles->readyToReceive);
-//
-//	}
-//}
 
 int main(void) {
 	prvSetupHardware();
@@ -110,8 +72,6 @@ int main(void) {
 	/*
 	 * dtasks
 	 */
-//	xTaskCreate(dtaskLimit, "dtaskLimit", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
-//	xTaskCreate(dtaskButton, "dtaskButton", 100, NULL, (tskIDLE_PRIORITY + 1UL), NULL);
 	xTaskCreate(dtaskUARTReader, "UARTReaderdTask", 256, (void*) commonHandles, (tskIDLE_PRIORITY +3UL), NULL);
 //	xTaskCreate(dtaskHardStop, "HardStopdTask", 100, NULL, (tskIDLE_PRIORITY + 4UL), NULL); // keep at highest priority!
 	xTaskCreate(dtaskMotor, "motordTask", 200, NULL, (tskIDLE_PRIORITY + 2UL), NULL); // keep at highest priority!
