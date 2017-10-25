@@ -17,13 +17,19 @@
 #include "Handles.h"
 #include "stdlib.h"
 #include <cmath>
+#include "event_groups.h"
 
 xSemaphoreHandle sbRIT;
 xSemaphoreHandle motorSemaphore;
+EventGroupHandle_t egrp = xEventGroupCreate();
 volatile uint32_t RIT_count;
 volatile uint8_t kumpi;
 volatile bool xuunta;
+#define BIT_0 (1 << 0) // X axis directional bool
 volatile bool yuunta;
+#define BIT_1 (1 << 1) // y axis directional bool
+#define BIT_2 (1 << 2) // x axis triggered
+#define BIT_3 (1 << 3) // y axis triggered
 
 extern "C" {
 	void RIT_IRQHandler(void) {
@@ -253,10 +259,11 @@ void justDrive(PlotterData &pd) {
 			if(countX >= 1) {
 				if(pd.dStepsX > 0) {
 //					pd.dirX = true;
-					xuunta = true;
+					//xuunta = true;
+					xEventGroupSetBits(egrp, BIT_0);
 				} else {
 //					pd.dirX = false;
-					xuunta = false;
+					//xuunta = false;
 				}
 
 				if(pd.dStepsX > 0) {
@@ -264,7 +271,8 @@ void justDrive(PlotterData &pd) {
 				} else {
 					pd.currentStepsX -= 1;
 				}
-				kumpi = 1;
+				//kumpi = 1;
+				xEventGroupSetBits(egrp, BIT_2);
 				RIT_start(1, 750);
 				countX -= 1;
 			}
@@ -276,10 +284,11 @@ void justDrive(PlotterData &pd) {
 			if(countY >= 1) {
 				if(pd.dStepsY > 0) {
 //					pd.dirY = true;
-					yuunta = true;
+					//yuunta = true;
+					xEventGroupSetBits(egrp, BIT_1);
 				} else {
 //					pd.dirY = false;
-					yuunta = false;
+					//yuunta = false;
 				}
 
 				if(pd.dStepsY > 0) {
@@ -287,7 +296,8 @@ void justDrive(PlotterData &pd) {
 				} else {
 					pd.currentStepsY -= 1;
 				}
-				kumpi = 2;
+				//kumpi = 2;
+				xEventGroupSetBits(egrp, BIT_3);
 				RIT_start(1, 750);
 				countY -= 1;
 			}
@@ -364,22 +374,35 @@ void dtaskMotor(void *pvParameters) {
 
 	DigitalIoPin stepPinY(0, 24, DigitalIoPin::output, false);
 	DigitalIoPin dirPinY(1, 0, DigitalIoPin::output, false);
+	EventBits_t allBits = (BIT_0 | BIT_1 | BIT_2 | BIT_3);
+
 
 	while(1) {
 		xSemaphoreTake(motorSemaphore, (TickType_t) portMAX_DELAY );
-
-		switch(kumpi) {
-		case 1:
-			dirPinX.write(xuunta);
+		ebits = xEventGroupWaitBits(egrp, allBits, pdTRUE, pdFALSE, configTICK_RATE_HZ / 100);
+		if ((ebits & (BIT_2)) == BIT_2) {
+			bool dir = ((ebits & BIT_0) == BIT_0);
+			dirPinX.write(dir);
 			stepPinX.write(true);
 			stepPinX.write(false);
-			break;
-		case 2:
-			dirPinY.write(yuunta);
+		} else  if ((ebits & (BIT_3)) == BIT_3) {
+			bool dir = ((ebits & BIT_1) == BIT_1);
+			dirPinY.write(dir);
 			stepPinY.write(true);
 			stepPinY.write(false);
-			break;
 		}
+//		switch(kumpi) {
+//		case 1:
+//			dirPinX.write(xuunta);
+//			stepPinX.write(true);
+//			stepPinX.write(false);
+//			break;
+//		case 2:
+//			dirPinY.write(yuunta);
+//			stepPinY.write(true);
+//			stepPinY.write(false);
+//			break;
+//		}
 //		if(kumpi == 1) {
 //			stepPinX.write(true);
 //			stepPinX.write(false);
