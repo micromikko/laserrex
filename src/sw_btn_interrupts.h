@@ -26,20 +26,20 @@
 
 // TODO: muista valita oikeet jutut
 /* oikeet jutut */
-//DigitalIoPin sw1(0, 8, DigitalIoPin::pullup, true);
-//DigitalIoPin sw2(1, 6, DigitalIoPin::pullup, true);
-//DigitalIoPin x1(0, 29, DigitalIoPin::pullup, true);
-//DigitalIoPin x2(0, 9, DigitalIoPin::pullup, true);
-//DigitalIoPin y1(1, 3, DigitalIoPin::pullup, true);
-//DigitalIoPin y2(0, 0, DigitalIoPin::pullup, true);
+//DigitalIoPin sw1asd(0, 8, DigitalIoPin::pullup, true);
+//DigitalIoPin sw2asd(1, 6, DigitalIoPin::pullup, true);
+//DigitalIoPin x1asd(0, 29, DigitalIoPin::pullup, true);
+//DigitalIoPin x2asd(0, 9, DigitalIoPin::pullup, true);
+//DigitalIoPin y1asd(1, 3, DigitalIoPin::pullup, true);
+//DigitalIoPin y2asd(0, 0, DigitalIoPin::pullup, true);
 
 
 
 extern "C" {
 void PIN_INT0_IRQHandler(void);
 void PIN_INT1_IRQHandler(void);
-//void PIN_INT2_IRQHandler(void);
-//void PIN_INT3_IRQHandler(void);
+void PIN_INT2_IRQHandler(void);
+void PIN_INT3_IRQHandler(void);
 void PIN_INT4_IRQHandler(void);
 void PIN_INT5_IRQHandler(void);
 }

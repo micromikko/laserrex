@@ -189,6 +189,7 @@ void PlotterData::resetCompack() {
 }
 
 int PlotterData::convertToSteps(const double before) {
-	return before * this->stepsPerMM;
+	int jaska = (int) (before * this->stepsPerMM);
+	return jaska;
 }
 

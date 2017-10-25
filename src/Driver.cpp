@@ -21,7 +21,7 @@
 xSemaphoreHandle sbRIT;
 xSemaphoreHandle motorSemaphore;
 volatile uint32_t RIT_count;
-volatile uint8_t kumpi;
+uint8_t kumpi;
 
 extern "C" {
 	void RIT_IRQHandler(void) {
@@ -113,18 +113,28 @@ void taskExecute(void *pvParameters) {
 	Handles *commonHandles = (Handles*) pvParameters;
 	PlotterData plotdat(plotdat.pen, 380, 310);
 	Parser parsakaali;
-	std::string *rawCommand = new std::string("G1 X00.00 Y200.10 A0");
-//	BaseType_t status;
+	std::string *rawCommand = new std::string("G1 X-50 Y-50 A0");
+	BaseType_t status;
 
 //	 caribourate(plotdat);
 	// init()
 	parsakaali.generalParse(plotdat, *rawCommand);
-	RIT_start(100, 1000);
 	calculateDrive(plotdat);
 	justDrive(plotdat);
+
+//	std::string *com2 = new std::string("G1 X0 Y50 A0");
+//	parsakaali.generalParse(plotdat, *com2);
+//	calculateDrive(plotdat);
+//	justDrive(plotdat);
+//
+//	std::string *com3 = new std::string("G1 X50 Y50 A0");
+//	parsakaali.generalParse(plotdat, *com3);
+//	calculateDrive(plotdat);
+//	justDrive(plotdat);
 //	parsakaali.debug(plotdat, *rawCommand, false);		// set true or false to see all info in compack or given command
-	plotdat.resetCompack(); // -.,-.,-.,
-	RIT_count = 0;
+//	plotdat.resetCompack(); // -.,-.,-.,
+//	RIT_count = 0;
+	ITM_write("VALMIS\r\n");
 	for(;;) {
 
 //		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
@@ -139,6 +149,7 @@ void taskExecute(void *pvParameters) {
 }
 
 void calculateDrive(PlotterData &pd) {
+	ITM_write("HEI HOI\r\n");
 	pd.dX = pd.targetX - pd.currentX;
 	pd.dY = pd.targetY - pd.currentY;
 
@@ -152,6 +163,8 @@ void calculateDrive(PlotterData &pd) {
 
 	pd.targetStepsX = pd.convertToSteps(pd.targetX);
 	pd.targetStepsY = pd.convertToSteps(pd.targetY);
+//	pd.targetStepsX = pd.stepsPerMM * pd.targetX;
+//	pd.targetStepsY = pd.stepsPerMM * pd.targetY;
 
 	pd.dStepsX = pd.targetStepsX - pd.currentStepsX;
 	pd.dStepsY = pd.targetStepsY - pd.currentStepsY;
@@ -161,13 +174,42 @@ void calculateDrive(PlotterData &pd) {
 	pd.stepIntervalX = (double) abs(pd.dStepsX) / (double) pd.dStepsMax;
 	pd.stepIntervalY = (double) abs(pd.dStepsY) / (double) pd.dStepsMax;
 
-	char commandBuffer[400];
-	memset(commandBuffer, 0, sizeof(commandBuffer));
-	const char *format = "posA: %d\r\nposB: %d\r\ntarA: %d\r\ntarB: %d\r\ndMax: %.2f\r\nstepA: %d\r\nstepB: %.2f\r\n";
-	memset(commandBuffer, 0, sizeof(commandBuffer));
-	snprintf(commandBuffer, sizeof(commandBuffer), format, pd.targetX, pd.targetY,
-			pd.targetStepsX, pd.targetStepsY, pd.dStepsMax, pd.stepIntervalX, pd.stepIntervalY);
-	ITM_write(commandBuffer);
+//	char commandBuffer[400];
+//	memset(commandBuffer, 0, sizeof(commandBuffer));
+//	const char *format =
+//			"curX: %.2f\r\n"
+//			"curY: %.2f\r\n"
+//			"tarX: %.2f\r\n"
+//			"tarY: %.2f\r\n"
+//			"dX: %.2f\r\n"
+//			"dY: %.2f\r\n"
+//			"curA: %d\r\n"
+//			"curB: %d\r\n"
+//			"tarA: %ld\r\n"
+//			"tarB: %ld\r\n"
+//			"dA: %d\r\n"
+//			"dB: %d\r\n"
+//			"dMax: %.2f\r\n"
+//			"stepA: %.2f\r\n"
+//			"stepB: %.2f\r\n";
+//	memset(commandBuffer, 0, sizeof(commandBuffer));
+//	snprintf(commandBuffer, sizeof(commandBuffer), format,
+//			pd.currentX,
+//			pd.currentY,
+//			pd.targetX,
+//			pd.targetY,
+//			pd.dX,
+//			pd.dY,
+//			pd.currentStepsX,
+//			pd.currentStepsY,
+//			pd.targetStepsX,
+//			pd.targetStepsY,
+//			pd.dStepsX,
+//			pd.dStepsY,
+//			pd.dStepsMax,
+//			pd.stepIntervalX,
+//			pd.stepIntervalY);
+//	ITM_write(commandBuffer);
 //	pd.currentX = pd.targetX;
 //	pd.currentY = pd.targetY;
 }
@@ -190,9 +232,9 @@ void justDrive(PlotterData &pd) {
 //	 cntB = countY;
 
 	int countX = 0;
-//	int countY = 0;
+	int countY = 0;
 
-	for(int i = 0 ;(pd.currentStepsX != pd.targetStepsX)||(pd.currentStepsY != pd.targetStepsY); i++) {
+	while((pd.currentStepsX != pd.targetStepsX) || (pd.currentStepsY != pd.targetStepsY)) {
 		// move A
 		if(pd.currentStepsX != pd.targetStepsX){
 			countX += pd.stepIntervalX;
@@ -214,17 +256,83 @@ void justDrive(PlotterData &pd) {
 				countX -= 1;
 			}
 		}
-		// move B
-//		if(posB!=tarB){
-//			cntB+=stepB;
-//			if(cntB>=1){
-//				d = dB>0?motorBfw:motorBbk;
-//				posB+=(dB>0?1:-1);
-//				stepperMoveB(d);
-//				cntB-=1;
+
+		if(pd.currentStepsY != pd.targetStepsY){
+			countY += pd.stepIntervalY;
+
+			if(countY >= 1) {
+				if(pd.dStepsY > 0) {
+					pd.dirY = true;
+				} else {
+					pd.dirY = false;
+				}
+
+				if(pd.dStepsY > 0) {
+					pd.currentStepsY += 1;
+				} else {
+					pd.currentStepsY -= 1;
+				}
+				kumpi = 2;
+				RIT_start(1, 1000);
+				countX -= 1;
+			}
+		}
+		kumpi = 0;
+	}
+//	for(int i = 0 ;(pd.currentStepsX != pd.targetStepsX)||(pd.currentStepsY != pd.targetStepsY); i++) {
+//		// move A
+//		if(pd.currentStepsX != pd.targetStepsX){
+//			countX += pd.stepIntervalX;
+//
+//			if(countX >= 1) {
+//				if(pd.dStepsX > 0) {
+//					pd.dirX = true;
+//				} else {
+//					pd.dirX = false;
+//				}
+//
+//				if(pd.dStepsX > 0) {
+//					pd.currentStepsX += 1;
+//				} else {
+//					pd.currentStepsX -= 1;
+//				}
+//				kumpi = 1;
+//				RIT_start(1, 1000);
+//				countX -= 1;
 //			}
 //		}
-	}
+//
+//		if(pd.currentStepsY != pd.targetStepsY){
+//			countY += pd.stepIntervalY;
+//
+//			if(countY >= 1) {
+//				if(pd.dStepsY > 0) {
+//					pd.dirY = true;
+//				} else {
+//					pd.dirY = false;
+//				}
+//
+//				if(pd.dStepsY > 0) {
+//					pd.currentStepsY += 1;
+//				} else {
+//					pd.currentStepsY -= 1;
+//				}
+//				kumpi = 1;
+//				RIT_start(1, 1000);
+//				countX -= 1;
+//			}
+//		}
+//		// move B
+////		if(posB!=tarB){
+////			cntB+=stepB;
+////			if(cntB>=1){
+////				d = dB>0?motorBfw:motorBbk;
+////				posB+=(dB>0?1:-1);
+////				stepperMoveB(d);
+////				cntB-=1;
+////			}
+////		}
+//	}
 
 	pd.currentStepsX = pd.targetStepsX;
 	pd.currentStepsY = pd.targetStepsY;
@@ -233,11 +341,10 @@ void justDrive(PlotterData &pd) {
 }
 
 
-
 void dtaskMotor(void *pvParameters) {
-	// -.,-.,-.,
-//	DigitalIoPin stepPinX(0, 27, DigitalIoPin::output, false);
-//	DigitalIoPin dirPinX(0, 28, DigitalIoPin::output, false);
+
+	DigitalIoPin stepPinX(0, 27, DigitalIoPin::output, false);
+	DigitalIoPin dirPinX(0, 28, DigitalIoPin::output, false);
 
 	DigitalIoPin stepPinY(0, 24, DigitalIoPin::output, false);
 	DigitalIoPin dirPinY(1, 0, DigitalIoPin::output, false);
@@ -245,22 +352,25 @@ void dtaskMotor(void *pvParameters) {
 	while(1) {
 		xSemaphoreTake(motorSemaphore, (TickType_t) portMAX_DELAY );
 
-//		read event flag
-//		if(bling, then x, if blong, then y)
-//		if äx
-//			stepPinX.write(true);
-//			stepPinX.write(false);
-//		if yy
-//
+		switch(kumpi) {
+		case 1:
+			stepPinX.write(true);
+			stepPinX.write(false);
+			break;
+		case 2:
+			stepPinY.write(true);
+			stepPinY.write(false);
+			break;
+		}
 //		if(kumpi == 1) {
 //			stepPinX.write(true);
 //			stepPinX.write(false);
 //		}
-
-		if(kumpi == 2) {
-			stepPinY.write(true);
-			stepPinY.write(false);
-		}
+//
+//		if(kumpi == 2) {
+//			stepPinY.write(true);
+//			stepPinY.write(false);
+//		}
 
 
 	}
