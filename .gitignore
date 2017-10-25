@@ -47,7 +47,7 @@ Debug/src/subdir.mk
 
 #Eclipse
 .metadata
-
+.settings
 #Mac
 .DS_Store
 /Debug/
