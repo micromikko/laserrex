@@ -21,7 +21,7 @@
 xSemaphoreHandle sbRIT;
 xSemaphoreHandle motorSemaphore;
 volatile uint32_t RIT_count;
-
+volatile uint8_t kumpi;
 
 extern "C" {
 	void RIT_IRQHandler(void) {
@@ -209,8 +209,8 @@ void justDrive(PlotterData &pd) {
 				} else {
 					pd.currentStepsX -= 1;
 				}
-
-				RIT_start(100, 1000);
+				kumpi = 1;
+				RIT_start(1, 1000);
 				countX -= 1;
 			}
 		}
@@ -242,7 +242,6 @@ void dtaskMotor(void *pvParameters) {
 	DigitalIoPin stepPinY(0, 24, DigitalIoPin::output, false);
 	DigitalIoPin dirPinY(1, 0, DigitalIoPin::output, false);
 
-
 	while(1) {
 		xSemaphoreTake(motorSemaphore, (TickType_t) portMAX_DELAY );
 
@@ -252,8 +251,17 @@ void dtaskMotor(void *pvParameters) {
 //			stepPinX.write(true);
 //			stepPinX.write(false);
 //		if yy
-		stepPinY.write(true);
-		stepPinY.write(false);
+//
+//		if(kumpi == 1) {
+//			stepPinX.write(true);
+//			stepPinX.write(false);
+//		}
+
+		if(kumpi == 2) {
+			stepPinY.write(true);
+			stepPinY.write(false);
+		}
+
 
 	}
 }
