@@ -25,6 +25,7 @@
 #include "stdlib.h"
 #include <cmath>
 #include "event_groups.h"
+#include "Servo.h"
 #define BIT_0 (1 << 0) // X axis directional bool
 #define BIT_1 (1 << 1) // y axis directional bool
 #define BIT_2 (1 << 2) // x axis triggered
@@ -100,7 +101,7 @@ void taskExecute(void *pvParameters) {
 	Handles *commonHandles = (Handles*) pvParameters;
 	PlotterData plotdat;
 	Parser parsakaali;
-	Servo servo;
+	Servo servo(0, 10);
 	servo.penUp();
 	vTaskDelay(10);
 
@@ -274,7 +275,7 @@ void caribourate(PlotterData &pd) {
 		/* Calculate the amount of steps to back up from the limit switch */
 		if (backupSteps == 0) {
 			int stepsTravelled = 0;
-			while (x1->read() || x2->read()) {
+			while (x1->read() || x2->read() || y1->read() || y2->read()) {
 				driveX(true);
 				stepsTravelled++;
 			}
