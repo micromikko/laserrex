@@ -41,7 +41,7 @@ void Servo::init() {
 
 	LPC_SCTLARGE0->EVENT[0].STATE = 0xFFFFFFFF; // event 0 happens in all states
 	LPC_SCTLARGE0->MATCHREL[0].L = 20000; // match 0 @ 20 000/1MHz = (50 Hz PWM freq)
-	LPC_SCTLARGE0->MATCHREL[1].L = 1500; // match 1 used for duty cycle (by default 1.5 ms which positions the servo in the center)
+	LPC_SCTLARGE0->MATCHREL[1].L = this->penUp_cycle_length; // match 1 used for duty cycle (by default 1.5 ms which positions the servo in the center)
 	LPC_SCTLARGE0->EVENT[0].CTRL = (1 << 12); // match 0 condition only
 	LPC_SCTLARGE0->EVENT[1].STATE = 0xFFFFFFFF; // event 1 happens in all states
 	LPC_SCTLARGE0->EVENT[1].CTRL = (1 << 0) | (1 << 12); // match 1 condition only

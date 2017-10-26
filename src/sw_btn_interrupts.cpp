@@ -13,6 +13,13 @@
 
 SemaphoreHandle_t limit_sem;
 
+DigitalIoPin sw1(0, 8, DigitalIoPin::pullup, true);
+DigitalIoPin sw2(1, 6, DigitalIoPin::pullup, true);
+DigitalIoPin ls1(0, 29, DigitalIoPin::pullup, true);
+DigitalIoPin ls2(0, 9, DigitalIoPin::pullup, true);
+DigitalIoPin ls3(1, 3, DigitalIoPin::pullup, true);
+DigitalIoPin ls4(0, 0, DigitalIoPin::pullup, true);
+
 extern "C" {
 void PIN_INT0_IRQHandler(void) {
 	//

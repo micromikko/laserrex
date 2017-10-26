@@ -100,6 +100,9 @@ void taskExecute(void *pvParameters) {
 	Handles *commonHandles = (Handles*) pvParameters;
 	PlotterData plotdat;
 	Parser parsakaali;
+	Servo servo;
+	servo.penUp();
+	vTaskDelay(10);
 
 	/* Disable interrupts for the duration of the calibration */
 	NVIC_DisableIRQ(PIN_INT0_IRQn);
@@ -205,13 +208,7 @@ void driveY(bool dir) {
 /* Calibration function that is to be run _before_ GPIO interrupts are initialized! */
 void caribourate(PlotterData &pd) {
 
-
-
-	/* Initialize pins to use in calibration. Also they need to be in
-	 * pullup mode for use in GPIO interrupts later, and the DigitalIoPin
-	 * constructor also conveniently does that. */
-	DigitalIoPin sw1(0, 8, DigitalIoPin::pullup, true); // no use in calibration but needs to be set for GPIO interrupts
-	DigitalIoPin sw2(1, 6, DigitalIoPin::pullup, true); // no use in calibration but needs to be set for GPIO interrupts
+	/* Initialize pins for use in calibration.  */
 	DigitalIoPin ls1(0, 29, DigitalIoPin::pullup, true);
 	DigitalIoPin ls2(0, 9, DigitalIoPin::pullup, true);
 	DigitalIoPin ls3(1, 3, DigitalIoPin::pullup, true);
