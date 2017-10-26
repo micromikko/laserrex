@@ -4,6 +4,13 @@
  *  Created on: 23.10.2017
  *      Author: micromikko
  */
+#if defined (__USE_LPCOPEN)
+#if defined(NO_BOARD_LIB)
+#include "chip.h"
+#else
+#include "board.h"
+#endif
+#endif
 
 #include "Driver.h"
 //#include "PlotterData.h"
@@ -94,7 +101,22 @@ void taskExecute(void *pvParameters) {
 	PlotterData plotdat;
 	Parser parsakaali;
 
+	/* Disable interrupts for the duration of the calibration */
+	NVIC_DisableIRQ(PIN_INT0_IRQn);
+	NVIC_DisableIRQ(PIN_INT1_IRQn);
+	NVIC_DisableIRQ(PIN_INT2_IRQn);
+	NVIC_DisableIRQ(PIN_INT3_IRQn);
+	NVIC_DisableIRQ(PIN_INT4_IRQn);
+	NVIC_DisableIRQ(PIN_INT5_IRQn);
+
 	caribourate(plotdat);
+
+	NVIC_EnableIRQ(PIN_INT0_IRQn);
+	NVIC_EnableIRQ(PIN_INT1_IRQn);
+	NVIC_EnableIRQ(PIN_INT2_IRQn);
+	NVIC_EnableIRQ(PIN_INT3_IRQn);
+	NVIC_EnableIRQ(PIN_INT4_IRQn);
+	NVIC_EnableIRQ(PIN_INT5_IRQn);
 
 //	BaseType_t status;
 
@@ -183,13 +205,7 @@ void driveY(bool dir) {
 /* Calibration function that is to be run _before_ GPIO interrupts are initialized! */
 void caribourate(PlotterData &pd) {
 
-	/* Disable interrupts for the duration of the calibration */
-	NVIC_DisableIRQ(PIN_INT0_IRQn);
-	NVIC_DisableIRQ(PIN_INT1_IRQn);
-	NVIC_DisableIRQ(PIN_INT2_IRQn);
-	NVIC_DisableIRQ(PIN_INT3_IRQn);
-	NVIC_DisableIRQ(PIN_INT4_IRQn);
-	NVIC_DisableIRQ(PIN_INT5_IRQn);
+
 
 	/* Initialize pins to use in calibration. Also they need to be in
 	 * pullup mode for use in GPIO interrupts later, and the DigitalIoPin
@@ -332,12 +348,6 @@ void caribourate(PlotterData &pd) {
 		}
 	}
 
-	NVIC_EnableIRQ(PIN_INT0_IRQn);
-	NVIC_EnableIRQ(PIN_INT1_IRQn);
-	NVIC_EnableIRQ(PIN_INT2_IRQn);
-	NVIC_EnableIRQ(PIN_INT3_IRQn);
-	NVIC_EnableIRQ(PIN_INT4_IRQn);
-	NVIC_EnableIRQ(PIN_INT5_IRQn);
 }
 
 

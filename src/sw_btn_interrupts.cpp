@@ -170,7 +170,7 @@ void dtaskHardStop(void *pvParameters) {
 	// TODO: Set priority in main to highest
 
 	/* Wait for a sempahore from IRQ handlers */
-	xSemaphoreTake(limit_sem, portMAX_DELAY);
+	BaseType_t status = xSemaphoreTake(limit_sem, portMAX_DELAY);
 
 	/* Disable interrupts for switches and the RIT timer to
 	 * make sure the stepper motors stop, at this point
