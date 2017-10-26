@@ -17,13 +17,12 @@
 #include "Handles.h"
 #include "stdlib.h"
 #include <cmath>
+#include "event_groups.h"
 
 xSemaphoreHandle sbRIT;
 xSemaphoreHandle motorSemaphore;
 volatile uint32_t RIT_count;
-volatile uint8_t kumpi;
-volatile bool xuunta;
-volatile bool yuunta;
+EventGroupHandle_t egrp = xEventGroupCreate();
 
 extern "C" {
 	void RIT_IRQHandler(void) {
@@ -155,6 +154,169 @@ void taskExecute(void *pvParameters) {
 //	}
 //}
 
+/* Calibration function that is to be run _before_ GPIO interrupts are initialized! */
+void caribourate(PlotterData &pd) {
+
+	/* Initialize pins to use in calibration. Also they need to be in
+	 * pullup mode for use in GPIO interrupts later, and the DigitalIoPin
+	 * constructor also conveniently does that. */
+	DigitalIoPin sw1(0, 8, DigitalIoPin::pullup, true); // no use in calibration but needs to be set for GPIO interrupts
+	DigitalIoPin sw2(1, 6, DigitalIoPin::pullup, true); // no use in calibration but needs to be set for GPIO interrupts
+	DigitalIoPin ls1(0, 29, DigitalIoPin::pullup, true);
+	DigitalIoPin ls2(0, 9, DigitalIoPin::pullup, true);
+	DigitalIoPin ls3(1, 3, DigitalIoPin::pullup, true);
+	DigitalIoPin ls4(0, 0, DigitalIoPin::pullup, true);
+
+	/* Pointers for limit switches */
+	DigitalIoPin* x1;
+	DigitalIoPin* x2;
+	DigitalIoPin* y1;
+	DigitalIoPin* y2;
+
+	/* Amount of steps to back up from limit switches. This is calculated in the upcoming loop. */
+	int backupSteps = 0;
+
+	/* Do once per axis */
+	for (int axisNr = 0; axisNr < 2; axisNr++) {
+		/* Drive to zero on each axis */
+		while (!ls1.read() && !ls2.read() && !ls3.read() && !ls4.read()) {
+			if (axisNr = 0) {
+				// X axis
+				driveX(false);
+			} else {
+				// Y axis
+				driveY(false);
+			}
+		}
+
+		/* Assign correct switches for the axes */
+		if (ls1.read()) {
+			if (axisNr = 0) {
+				x1 = ls1;
+				x2 = ls2;
+			} else {
+				y1 = ls1;
+				y2 = ls2;
+			}
+		} else if (ls2.read()) {
+			if (axisNr = 0) {
+				x1 = ls2;
+				x2 = ls1;
+			} else {
+				y1 = ls2;
+				y2 = ls1;
+			}
+		} else if (ls3.read()) {
+			if (axisNr = 0) {
+				x1 = ls3;
+				x2 = ls4;
+			} else {
+				y1 = ls3;
+				y2 = ls4;
+			}
+		} else if (ls4.read()) {
+			if (axisNr = 0) {
+				x1 = ls4;
+				x2 = ls3;
+			} else {
+				y1 = ls4;
+				y2 = ls3;
+			}
+		}
+
+		/* Calculate the amount of steps to back up from the limit switch */
+		if (backupSteps = 0) {
+			int stepsTravelled = 0;
+			while (x1.read() || x2.read()) {
+				driveX(true);
+				stepsTravelled++;
+			}
+			backupSteps = (int) ((double) stepsTravelled * (double) 1.5);
+		}
+		/* Use the calculated amount of backup steps to backup from the Y axis limit switch */
+		else {
+			for (int i; i < backupSteps; i++) {
+				driveY(true);
+			}
+		}
+	}
+
+	/* Calculate amount of steps to the other end of the axes and travel back to origin. */
+	while (!xFinished || !yFinished) {
+		bool xFinished = false;
+		bool yFinished = false;
+		int xStepsTravelled = 0;
+		int yStepsTravelled = 0;
+
+		/* As long as limit switches aren't pressed, drive forward on the X axis */
+		if (!x1.read() && !x2.read()) {
+			driveX(true);
+			xStepsTravelled++;
+		} else {
+			xFinished = true;
+		}
+
+		/* As long as limit switches aren't pressed, drive forward on the Y axis */
+		if (!y1.read() && !y2.read()) {
+			driveY(true);
+			yStepsTravelled++;
+		} else {
+			yFinished = true;
+		}
+
+		/* Do this after we are at the positive end of both axes */
+		if (xFinished && yFinished) {
+			/*  */
+			for (int i = 0; i < backupSteps; i++) {
+				driveX(false);
+				driveY(false);
+			}
+
+			pd.axisStepCountX = xStepsTravelled - backupSteps;
+			pd.axisStepCountY = yStepsTravelled - backupSteps;
+			pd.stepsPerMM = (double) pd.axisStepCountX / (double) pd.axisLengthX;
+			xStepsTravelled = 0;
+			yStepsTravelled = 0;
+			bool xFinished2 = false;
+			bool yFinished2 = false;
+
+			while(!xFinished2 || !yFinished2) {
+				if (xStepsTravelled < pd.axisStepCountX) {
+					driveX(false);
+					xStepsTravelled++;
+				}
+				if (yStepsTravelled < pd.axisStepCountY) {
+					driveY(false);
+					yStepsTravelled++;
+				}
+			}
+
+			pd.absoluteCurrentX = 0.0;
+			pd.absoluteCurrentY = 0.0;
+		}
+	}
+}
+
+/* Drive X for one step in the given direction */
+void driveX (bool dir) {
+	if (dir) {
+		xEventGroupSetBits(egrp, BIT_2 | BIT_0);
+	} else {
+		xEventGroupSetBits(egrp, BIT_2);
+	}
+	RIT_start(1, 750);
+}
+
+/* Drive Y for one step in the negative direction */
+void driveY(bool dir) {
+	if (dir) {
+		xEventGroupSetBits(egrp, BIT_3 | BIT_1);
+	} else {
+		xEventGroupSetBits(egrp, BIT_3);
+	}
+	RIT_start(1, 750);
+}
+
 void calculateDrive(PlotterData &pd) {
 
 	int stepAbsoluteCurrentX = pd.convertToSteps(pd.absoluteCurrentX);
@@ -220,15 +382,13 @@ void justDrive(PlotterData &pd, int stepDeltaX, int stepDeltaY, double ratioX, d
 			if(countX >= 1) {
 				if(stepDeltaX > 0) {
 //					pd.dirX = true;
-					xuunta = true;
+					xEventGroupSetBits(egrp, BIT_0 | BIT_2);
 					pd.absoluteCurrentX += 1;
 				} else {
 //					pd.dirX = false;
-					xuunta = false;
+					xEventGroupSetBits(egrp, BIT_2);
 					pd.absoluteCurrentX -= 1;
 				}
-
-				kumpi = 1;
 				RIT_start(10, 1000);
 				countX -= 1;
 			}
@@ -240,15 +400,13 @@ void justDrive(PlotterData &pd, int stepDeltaX, int stepDeltaY, double ratioX, d
 			if(countY >= 1) {
 				if(stepDeltaY > 0) {
 //					pd.dirX = true;
-					yuunta = true;
+					xEventGroupSetBits(egrp, BIT_1 | BIT_3);
 					pd.absoluteCurrentY += 1;
 				} else {
 //					pd.dirX = false;
-					yuunta = false;
+					xEventGroupSetBits(egrp, BIT_3);
 					pd.absoluteCurrentY -= 1;
 				}
-
-				kumpi = 1;
 				RIT_start(10, 1000);
 				countY -= 1;
 			}
@@ -281,17 +439,17 @@ void dtaskMotor(void *pvParameters) {
 	while(1) {
 		xSemaphoreTake(motorSemaphore, (TickType_t) portMAX_DELAY );
 
-		switch(kumpi) {
-		case 1:
-			dirPinX.write(xuunta);
+		ebits = xEventGroupWaitBits(egrp, allBits, pdTRUE, pdFALSE, configTICK_RATE_HZ / 100);
+		if ((ebits & (BIT_2)) == BIT_2) {
+			bool dir = ((ebits & BIT_0) == BIT_0);
+			dirPinX.write(dir);
 			stepPinX.write(true);
 			stepPinX.write(false);
-			break;
-		case 2:
-			dirPinY.write(yuunta);
+		} else  if ((ebits & (BIT_3)) == BIT_3) {
+			bool dir = ((ebits & BIT_1) == BIT_1);
+			dirPinY.write(dir);
 			stepPinY.write(true);
 			stepPinY.write(false);
-			break;
 		}
 
 
