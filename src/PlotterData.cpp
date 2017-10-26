@@ -57,6 +57,9 @@ PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouE
 
 	this->targetPen = 0;			// pwm
 	this->targetLaser = 0;		// pwm
+
+	this->dirX = true;
+	this->dirY = true;
 }
 
 PlotterData::~PlotterData() {

@@ -81,6 +81,7 @@ int main(void) {
 
 	UARTModule_init();
 	RIT_init();
+
 	GPIO_interrupt_init();
 
 	vTaskStartScheduler();

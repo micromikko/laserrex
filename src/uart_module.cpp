@@ -26,10 +26,10 @@ extern "C"
 void UART0_IRQHandler(void) {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	uint32_t c;
-	{
-	std::lock_guard<myMutex> locker(serial_guard);
+//	{
+//	std::lock_guard<myMutex> locker(serial_guard);
 	c = LPC_USART0->RXDATA;
-	}
+//	}
 
 	xQueueSendToBackFromISR(char_queue, &c, &xHigherPriorityTaskWoken );
 	portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
@@ -87,11 +87,11 @@ void taskSendOK(void *pvParameters) {
 
 		if( xSemaphoreTake(commonHandles->readyToReceive, portMAX_DELAY)  == pdTRUE ) {
 			/*We are done processing the previous command, send "OK" to mDraw to get new instruction*/
-			{
+//			{
 			/*Take mutex to prevent race conditions when writing to COM port*/
-			std::lock_guard<myMutex> locker(serial_guard);
-			Board_UARTPutSTR("OK\n");
-			}
+//			std::lock_guard<myMutex> locker(serial_guard);
+			Board_UARTPutSTR("OK\r\n");
+//			}
 			/*Simulate delay caused by operating motors etc.*/
 //			vTaskDelay(5); // -.,-.,-.,
 		}
