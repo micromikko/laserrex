@@ -99,7 +99,8 @@ void executeCommand(PlotterData *pd, Servo &penServo) {
 	}
 }
 
-void driveX (bool dir, bool prevDir, DigitalIoPin &dirPin, PlotterData &pd) {
+/* Drive X for one step in the given direction. */
+void driveX (bool dir, DigitalIoPin &dirPin, PlotterData &pd) {
 	if (dir != pd.dirX) {
 		if (dir) {
 			pd.dirX = true;
@@ -112,8 +113,8 @@ void driveX (bool dir, bool prevDir, DigitalIoPin &dirPin, PlotterData &pd) {
 	RIT_start(1, 750);
 }
 
-/* Drive Y for one step in the negative direction. Y DRIVE VALUES FLIPPED! */
-void driveY(bool dir, bool prevDir, DigitalIoPin &dirPin, PlotterData &pd) {
+/* Drive Y for one step in the given direction. Y DRIVE VALUES FLIPPED! */
+void driveY(bool dir, DigitalIoPin &dirPin, PlotterData &pd) {
 	if (dir != pd.dirY) {
 		if (dir) {
 			pd.dirY = false;
@@ -158,10 +159,10 @@ void caribourate(PlotterData &pd) {
 		while (!ls1.read() && !ls2.read() && !ls3.read() && !ls4.read()) {
 			if (axisNr == 0) {
 				// X axis
-				driveX(false, pd.dirX, dirPinX, pd);
+				driveX(false, dirPinX, pd);
 			} else {
 				// Y axis
-				driveY(false, pd.dirY, dirPinY, pd);
+				driveY(false, dirPinY, pd);
 			}
 		}
 
@@ -214,9 +215,9 @@ void caribourate(PlotterData &pd) {
 		/* Back up from limit switches */
 		for (int i; i < backupSteps; i++) {
 			if (axisNr == 0) {
-				driveX(true, pd.dirX, dirPinX, pd);
+				driveX(true, dirPinX, pd);
 			} else {
-				driveY(true, pd.dirY, dirPinY, pd);
+				driveY(true, dirPinY, pd);
 			}
 		}
 	}
@@ -230,7 +231,7 @@ void caribourate(PlotterData &pd) {
 
 		/* As long as limit switches aren't pressed, drive forward on the X axis */
 		if (!x1->read() && !x2->read()) {
-			driveX(true, pd.dirX, dirPinX, pd);
+			driveX(true, dirPinX, pd);
 			xStepsTravelled++;
 		} else {
 			xFinished = true;
@@ -238,7 +239,7 @@ void caribourate(PlotterData &pd) {
 
 		/* As long as limit switches aren't pressed, drive forward on the Y axis */
 		if (!y1->read() && !y2->read()) {
-			driveY(true, pd.dirY, dirPinY, pd);
+			driveY(true, dirPinY, pd);
 			yStepsTravelled++;
 		} else {
 			yFinished = true;
@@ -248,8 +249,8 @@ void caribourate(PlotterData &pd) {
 		if (xFinished && yFinished) {
 			/*  */
 			for (int i = 0; i < backupSteps; i++) {
-				driveX(false, pd.dirX, dirPinX, pd);
-				driveY(false, pd.dirY, dirPinY, pd);
+				driveX(false, dirPinX, pd);
+				driveY(false, dirPinY, pd);
 			}
 
 			pd.axisStepCountX = xStepsTravelled - backupSteps;
@@ -264,11 +265,11 @@ void caribourate(PlotterData &pd) {
 
 			while(!xFinished2 || !yFinished2) {
 				if (xStepsTravelled < pd.axisStepCountX) {
-					driveX(false, pd.dirX, dirPinX, pd);
+					driveX(false, dirPinX, pd);
 					xStepsTravelled++;
 				}
 				if (yStepsTravelled < pd.axisStepCountY) {
-					driveY(false, pd.dirY, dirPinY, pd);
+					driveY(false, dirPinY, pd);
 					yStepsTravelled++;
 				}
 			}
