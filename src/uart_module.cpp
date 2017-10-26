@@ -93,7 +93,7 @@ void taskSendOK(void *pvParameters) {
 			Board_UARTPutSTR("OK\n");
 			}
 			/*Simulate delay caused by operating motors etc.*/
-			vTaskDelay(5);
+//			vTaskDelay(5); // -.,-.,-.,
 		}
 	}
 }
