@@ -38,18 +38,16 @@ void UART0_IRQHandler(void) {
 }
 
 
-/*Create queues for messaging characters from UART interrupt to reader task.  Configure UART interrupts.*/
+/*Run UART interrupt configuration and create char queue for messaging chars to reader task from ISR .*/
 void UARTModule_init() {
 	configUARTInterrupt();
-	ITM_init();
 
 	char_queue = xQueueCreate(1, sizeof(uint32_t));
 }
 
 
 static void configUARTInterrupt() {
-	uint32_t mask = (1 << 0);
-	Chip_UART_IntEnable(LPC_USART0, mask);
+	Chip_UART_IntEnable(LPC_USART0, INT_MASK);
 	/* I added the macro here for safety so we don't interfere with system interrupts
 	 * - Simo */
 	NVIC_SetPriority(UART0_IRQn, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 2);
@@ -64,16 +62,18 @@ void dtaskUARTReader(void *pvParameters) {
 		uint32_t c;
 
 		while (1) {
-
+			//Sit here waiting for UART interrupt to fire and give us a character
 			xQueueReceive(char_queue, &c, portMAX_DELAY);
-
-			(*str).push_back((char)c);
-			Chip_UART_IntEnable(LPC_USART0, INT_MASK);
 			
 			if(c == '\n' || c == '\r') {
-				/*Prevent race conditions to the COM port by taking a mutex */
+				//We have received the whole command, send it to parser queue
 				xQueueSendToBack(commonHandles->commandQueue_raw, &str, portMAX_DELAY);
+				Chip_UART_IntEnable(LPC_USART0, INT_MASK);
 				break;
+			}
+			else {
+				(*str).push_back((char)c);
+				Chip_UART_IntEnable(LPC_USART0, INT_MASK);
 			}
 		}
 	}
@@ -84,14 +84,16 @@ void dtaskUARTReader(void *pvParameters) {
 void taskSendOK(void *pvParameters) {
 	Handles *commonHandles = (Handles*) pvParameters;
 	while(1) {
-		if( xSemaphoreTake(commonHandles->readyToReceive, portMAX_DELAY)  == pdTRUE ) {
 
+		if( xSemaphoreTake(commonHandles->readyToReceive, portMAX_DELAY)  == pdTRUE ) {
+			/*We are done processing the previous command, send "OK" to mDraw to get new instruction*/
 			{
+			/*Take mutex to prevent race conditions when writing to COM port*/
 			std::lock_guard<myMutex> locker(serial_guard);
 			Board_UARTPutSTR("OK\n");
-			ITM_write("OK\r\n"); // -.,-.,-.,
 			}
-			vTaskDelay(10);
+			/*Simulate delay caused by operating motors etc.*/
+			vTaskDelay(5);
 		}
 	}
 }
