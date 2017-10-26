@@ -86,74 +86,74 @@ void RIT_init() {
 	motorSemaphore = xSemaphoreCreateBinary();
 }
 
-//void taskExecute(void *pvParameters) {
-//	Handles *commonHandles = (Handles*) pvParameters;
-//	PlotterData plotdat;
-//	Parser parsakaali;
-//
-////	BaseType_t status;
-//
-//	// caribourate()
-//	// init()
-//	for(;;) {
-//		std::string *rawCommand;
-//		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
-//		parsakaali.generalParse(plotdat, *rawCommand);
-//		parsakaali.debug(plotdat, *rawCommand, false);
-//
-//		calculateDrive(plotdat);
-////		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
-//		plotdat.resetCompack(); // -.,-.,-.,
-//		delete rawCommand;
-//
-//		xSemaphoreGive(commonHandles->readyToReceive);
-//	}
-//}
-
 void taskExecute(void *pvParameters) {
 	Handles *commonHandles = (Handles*) pvParameters;
-	PlotterData plotdat(plotdat.pen, 380, 310);
+	PlotterData plotdat;
 	Parser parsakaali;
-	std::string *rawCommand = new std::string("G1 X30 Y50 A0");
+
 //	BaseType_t status;
 
-//	 caribourate(plotdat);
+	// caribourate()
 	// init()
-	parsakaali.generalParse(plotdat, *rawCommand);
-//	parsakaali.debug(plotdat, *rawCommand, false);
-	calculateDrive(plotdat);
-	delete rawCommand;
-//	plotdat.resetCompack();
-
-	std::string *com2 = new std::string("G1 X0 Y-20 A0");
-	parsakaali.generalParse(plotdat, *com2);
-//	parsakaali.debug(plotdat, *com2, false);
-	calculateDrive(plotdat);
-//	plotdat.resetCompack();
-	delete com2;
-
-	std::string *com3 = new std::string("G1 X30 Y0 A0");
-	parsakaali.generalParse(plotdat, *com3);
-//	parsakaali.debug(plotdat, *com3, false);
-	calculateDrive(plotdat);
-	delete com3;
-//	plotdat.resetCompack();
-//	parsakaali.debug(plotdat, *rawCommand, false);		// set true or false to see all info in compack or given command
-//	plotdat.resetCompack(); // -.,-.,-.,
-//	RIT_count = 0;
-//	ITM_write("VALMIS\r\n");
 	for(;;) {
+		std::string *rawCommand;
+		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
+		parsakaali.generalParse(plotdat, *rawCommand);
+		parsakaali.debug(plotdat, *rawCommand, false);
+		calculateDrive(plotdat);
 
-//		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
-//		parsakaali.generalParse(plotdat, *rawCommand);
-//		calculateDrive(plotdat);
-//		justDrive(plotdat);
-////		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
-//		plotdat.resetCompack(); // -.,-.,-.,
-//		RIT_count = 0;
-//		xSemaphoreGive(commonHandles->readyToReceive);
+//		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
+
+		delete rawCommand;
+
+		xSemaphoreGive(commonHandles->readyToReceive);
 	}
 }
+
+//void taskExecute(void *pvParameters) {
+//	Handles *commonHandles = (Handles*) pvParameters;
+//	PlotterData plotdat(plotdat.pen, 380, 310);
+//	Parser parsakaali;
+//	std::string *rawCommand = new std::string("G1 X30 Y50 A0");
+////	BaseType_t status;
+//
+////	 caribourate(plotdat);
+//	// init()
+//	parsakaali.generalParse(plotdat, *rawCommand);
+////	parsakaali.debug(plotdat, *rawCommand, false);
+//	calculateDrive(plotdat);
+//	delete rawCommand;
+////	plotdat.resetCompack();
+//
+//	std::string *com2 = new std::string("G1 X0 Y-20 A0");
+//	parsakaali.generalParse(plotdat, *com2);
+////	parsakaali.debug(plotdat, *com2, false);
+//	calculateDrive(plotdat);
+////	plotdat.resetCompack();
+//	delete com2;
+//
+//	std::string *com3 = new std::string("G1 X30 Y0 A0");
+//	parsakaali.generalParse(plotdat, *com3);
+////	parsakaali.debug(plotdat, *com3, false);
+//	calculateDrive(plotdat);
+//	delete com3;
+////	plotdat.resetCompack();
+////	parsakaali.debug(plotdat, *rawCommand, false);		// set true or false to see all info in compack or given command
+////	plotdat.resetCompack(); // -.,-.,-.,
+////	RIT_count = 0;
+////	ITM_write("VALMIS\r\n");
+//	for(;;) {
+//
+////		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
+////		parsakaali.generalParse(plotdat, *rawCommand);
+////		calculateDrive(plotdat);
+////		justDrive(plotdat);
+//////		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
+////		plotdat.resetCompack(); // -.,-.,-.,
+////		RIT_count = 0;
+////		xSemaphoreGive(commonHandles->readyToReceive);
+//	}
+//}
 
 void calculateDrive(PlotterData &pd) {
 
@@ -263,8 +263,6 @@ void justDrive(PlotterData &pd, int stepDeltaX, int stepDeltaY, double ratioX, d
 //		while(1);
 //	}
 
-//	pd.currentStepsX = pd.targetStepsX;
-//	pd.currentStepsY = pd.targetStepsY;
 	pd.absoluteCurrentX = pd.absoluteTargetX;
 	pd.absoluteCurrentY = pd.absoluteTargetY;
 
@@ -283,18 +281,18 @@ void dtaskMotor(void *pvParameters) {
 	while(1) {
 		xSemaphoreTake(motorSemaphore, (TickType_t) portMAX_DELAY );
 
-//		switch(kumpi) {
-//		case 1:
-//			dirPinX.write(xuunta);
-//			stepPinX.write(true);
-//			stepPinX.write(false);
-//			break;
-//		case 2:
-//			dirPinY.write(yuunta);
-//			stepPinY.write(true);
-//			stepPinY.write(false);
-//			break;
-//		}
+		switch(kumpi) {
+		case 1:
+			dirPinX.write(xuunta);
+			stepPinX.write(true);
+			stepPinX.write(false);
+			break;
+		case 2:
+			dirPinY.write(yuunta);
+			stepPinY.write(true);
+			stepPinY.write(false);
+			break;
+		}
 
 
 
