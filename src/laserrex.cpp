@@ -80,7 +80,6 @@ int main(void) {
 	xSemaphoreGive(commonHandles->readyToReceive);			 //This has to be initially available
 
 	UARTModule_init();
-	GPIO_interrupt_init();
 	RIT_init();
 
 	vTaskStartScheduler();

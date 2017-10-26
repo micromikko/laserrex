@@ -18,6 +18,7 @@
 #include "stdlib.h"
 #include <cmath>
 #include "event_groups.h"
+#include "sw_btn_interrupts.h"
 
 xSemaphoreHandle sbRIT;
 xSemaphoreHandle motorSemaphore;
@@ -89,6 +90,9 @@ void taskExecute(void *pvParameters) {
 	Handles *commonHandles = (Handles*) pvParameters;
 	PlotterData plotdat;
 	Parser parsakaali;
+
+	caribourate(plotdat);
+	GPIO_interrupt_init();
 
 //	BaseType_t status;
 
