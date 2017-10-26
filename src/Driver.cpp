@@ -88,18 +88,13 @@ void executeCommand(PlotterData *pd, Servo &penServo) {
 		}
 	}
 	else if(pd->gorm == 'M' && pd->gormNum == 1) {
-//		switch(pd->targetPen) {
-//			case 90:
-//				penServo.penDown();
-//				break;
-//			case 130:
-//				penServo.penUp();
-//				break;
-//		}
-		if(pd->targetPen > 120) {
-			penServo.penUp();
-		} else {
-			penServo.penDown();
+		switch(pd->targetPen) {
+			case 90:
+				penServo.penDown();
+				break;
+			case 130:
+				penServo.penUp();
+				break;
 		}
 	}
 }
