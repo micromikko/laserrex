@@ -384,14 +384,13 @@ void justDrive(PlotterData &pd, int stepDeltaX, int stepDeltaY, double ratioX, d
 			if(countX >= 1) {
 				if(stepDeltaX > 0) {
 //					pd.dirX = true;
-					xEventGroupSetBits(egrp, BIT_0 | BIT_2);
+					driveX(true);
 					pd.absoluteCurrentX += 1;
 				} else {
 //					pd.dirX = false;
-					xEventGroupSetBits(egrp, BIT_2);
+					driveX(false);
 					pd.absoluteCurrentX -= 1;
 				}
-				RIT_start(10, 1000);
 				countX -= 1;
 			}
 		}
@@ -402,14 +401,13 @@ void justDrive(PlotterData &pd, int stepDeltaX, int stepDeltaY, double ratioX, d
 			if(countY >= 1) {
 				if(stepDeltaY > 0) {
 //					pd.dirX = true;
-					xEventGroupSetBits(egrp, BIT_1 | BIT_3);
+					driveY(true);
 					pd.absoluteCurrentY += 1;
 				} else {
 //					pd.dirX = false;
-					xEventGroupSetBits(egrp, BIT_3);
+					driveY(false);
 					pd.absoluteCurrentY -= 1;
 				}
-				RIT_start(10, 1000);
 				countY -= 1;
 			}
 		}
@@ -441,7 +439,7 @@ void dtaskMotor(void *pvParameters) {
 	while(1) {
 		xSemaphoreTake(motorSemaphore, (TickType_t) portMAX_DELAY );
 
-		ebits = xEventGroupWaitBits(egrp, allBits, pdTRUE, pdFALSE, configTICK_RATE_HZ / 100);
+		EventBits_t ebits = xEventGroupWaitBits(egrp, allBits, pdTRUE, pdFALSE, configTICK_RATE_HZ / 100);
 		if ((ebits & (BIT_2)) == BIT_2) {
 			bool dir = ((ebits & BIT_0) == BIT_0);
 			dirPinX.write(dir);
