@@ -18,7 +18,10 @@
 #include "stdlib.h"
 #include <cmath>
 #include "event_groups.h"
-#include "sw_btn_interrupts.h"
+#define BIT_0 (1 << 0) // X axis directional bool
+#define BIT_1 (1 << 1) // y axis directional bool
+#define BIT_2 (1 << 2) // x axis triggered
+#define BIT_3 (1 << 3) // y axis triggered
 
 xSemaphoreHandle sbRIT;
 xSemaphoreHandle motorSemaphore;
@@ -92,7 +95,6 @@ void taskExecute(void *pvParameters) {
 	Parser parsakaali;
 
 	caribourate(plotdat);
-	GPIO_interrupt_init();
 
 //	BaseType_t status;
 
@@ -158,8 +160,36 @@ void taskExecute(void *pvParameters) {
 //	}
 //}
 
+/* Drive X for one step in the given direction */
+void driveX (bool dir) {
+	if (dir) {
+		xEventGroupSetBits(egrp, BIT_2 | BIT_0);
+	} else {
+		xEventGroupSetBits(egrp, BIT_2);
+	}
+	RIT_start(1, 750);
+}
+
+/* Drive Y for one step in the negative direction */
+void driveY(bool dir) {
+	if (dir) {
+		xEventGroupSetBits(egrp, BIT_3 | BIT_1);
+	} else {
+		xEventGroupSetBits(egrp, BIT_3);
+	}
+	RIT_start(1, 750);
+}
+
 /* Calibration function that is to be run _before_ GPIO interrupts are initialized! */
 void caribourate(PlotterData &pd) {
+
+	/* Disable interrupts for the duration of the calibration */
+	NVIC_DisableIRQ(PIN_INT0_IRQn);
+	NVIC_DisableIRQ(PIN_INT1_IRQn);
+	NVIC_DisableIRQ(PIN_INT2_IRQn);
+	NVIC_DisableIRQ(PIN_INT3_IRQn);
+	NVIC_DisableIRQ(PIN_INT4_IRQn);
+	NVIC_DisableIRQ(PIN_INT5_IRQn);
 
 	/* Initialize pins to use in calibration. Also they need to be in
 	 * pullup mode for use in GPIO interrupts later, and the DigitalIoPin
@@ -184,7 +214,7 @@ void caribourate(PlotterData &pd) {
 	for (int axisNr = 0; axisNr < 2; axisNr++) {
 		/* Drive to zero on each axis */
 		while (!ls1.read() && !ls2.read() && !ls3.read() && !ls4.read()) {
-			if (axisNr = 0) {
+			if (axisNr == 0) {
 				// X axis
 				driveX(false);
 			} else {
@@ -195,43 +225,43 @@ void caribourate(PlotterData &pd) {
 
 		/* Assign correct switches for the axes */
 		if (ls1.read()) {
-			if (axisNr = 0) {
-				x1 = ls1;
-				x2 = ls2;
+			if (axisNr == 0) {
+				x1 = &ls1;
+				x2 = &ls2;
 			} else {
-				y1 = ls1;
-				y2 = ls2;
+				y1 = &ls1;
+				y2 = &ls2;
 			}
 		} else if (ls2.read()) {
-			if (axisNr = 0) {
-				x1 = ls2;
-				x2 = ls1;
+			if (axisNr == 0) {
+				x1 = &ls2;
+				x2 = &ls1;
 			} else {
-				y1 = ls2;
-				y2 = ls1;
+				y1 = &ls2;
+				y2 = &ls1;
 			}
 		} else if (ls3.read()) {
-			if (axisNr = 0) {
-				x1 = ls3;
-				x2 = ls4;
+			if (axisNr == 0) {
+				x1 = &ls3;
+				x2 = &ls4;
 			} else {
-				y1 = ls3;
-				y2 = ls4;
+				y1 = &ls3;
+				y2 = &ls4;
 			}
 		} else if (ls4.read()) {
-			if (axisNr = 0) {
-				x1 = ls4;
-				x2 = ls3;
+			if (axisNr == 0) {
+				x1 = &ls4;
+				x2 = &ls3;
 			} else {
-				y1 = ls4;
-				y2 = ls3;
+				y1 = &ls4;
+				y2 = &ls3;
 			}
 		}
 
 		/* Calculate the amount of steps to back up from the limit switch */
-		if (backupSteps = 0) {
+		if (backupSteps == 0) {
 			int stepsTravelled = 0;
-			while (x1.read() || x2.read()) {
+			while (x1->read() || x2->read()) {
 				driveX(true);
 				stepsTravelled++;
 			}
@@ -244,16 +274,16 @@ void caribourate(PlotterData &pd) {
 			}
 		}
 	}
-
+	bool xFinished = false;
+	bool yFinished = false;
 	/* Calculate amount of steps to the other end of the axes and travel back to origin. */
 	while (!xFinished || !yFinished) {
-		bool xFinished = false;
-		bool yFinished = false;
+
 		int xStepsTravelled = 0;
 		int yStepsTravelled = 0;
 
 		/* As long as limit switches aren't pressed, drive forward on the X axis */
-		if (!x1.read() && !x2.read()) {
+		if (!x1->read() && !x2->read()) {
 			driveX(true);
 			xStepsTravelled++;
 		} else {
@@ -261,7 +291,7 @@ void caribourate(PlotterData &pd) {
 		}
 
 		/* As long as limit switches aren't pressed, drive forward on the Y axis */
-		if (!y1.read() && !y2.read()) {
+		if (!y1->read() && !y2->read()) {
 			driveY(true);
 			yStepsTravelled++;
 		} else {
@@ -301,27 +331,15 @@ void caribourate(PlotterData &pd) {
 			pd.absoluteCurrentY = 0.0;
 		}
 	}
+
+	NVIC_EnableIRQ(PIN_INT0_IRQn);
+	NVIC_EnableIRQ(PIN_INT1_IRQn);
+	NVIC_EnableIRQ(PIN_INT2_IRQn);
+	NVIC_EnableIRQ(PIN_INT3_IRQn);
+	NVIC_EnableIRQ(PIN_INT4_IRQn);
+	NVIC_EnableIRQ(PIN_INT5_IRQn);
 }
 
-/* Drive X for one step in the given direction */
-void driveX (bool dir) {
-	if (dir) {
-		xEventGroupSetBits(egrp, BIT_2 | BIT_0);
-	} else {
-		xEventGroupSetBits(egrp, BIT_2);
-	}
-	RIT_start(1, 750);
-}
-
-/* Drive Y for one step in the negative direction */
-void driveY(bool dir) {
-	if (dir) {
-		xEventGroupSetBits(egrp, BIT_3 | BIT_1);
-	} else {
-		xEventGroupSetBits(egrp, BIT_3);
-	}
-	RIT_start(1, 750);
-}
 
 void calculateDrive(PlotterData &pd) {
 
@@ -439,6 +457,7 @@ void dtaskMotor(void *pvParameters) {
 
 	DigitalIoPin stepPinY(0, 24, DigitalIoPin::output, false);
 	DigitalIoPin dirPinY(1, 0, DigitalIoPin::output, false);
+	EventBits_t allBits = (BIT_0 | BIT_1 | BIT_2 | BIT_3);
 
 	while(1) {
 		xSemaphoreTake(motorSemaphore, (TickType_t) portMAX_DELAY );
