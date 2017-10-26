@@ -25,7 +25,7 @@ private:
 	int portNum;
 	int pinNum;
 	const uint16_t penUp_cycle_length = 1200;
-	const uint16_t penDown_cycle_length = 1450;
+	const uint16_t penDown_cycle_length = 1600; // 1450
 	void init();
 public:
 	Servo(int portNum, int pinNum);

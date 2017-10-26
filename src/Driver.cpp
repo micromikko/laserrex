@@ -12,7 +12,8 @@
 #include <cstring>
 #include "FreeRTOS.h"
 #include "task.h"
-//#include "PlotterData.h"
+#include "event_groups.h"
+
 #include "Parser.h"
 #include "Handles.h"
 #include "stdlib.h"
@@ -22,30 +23,19 @@ xSemaphoreHandle sbRIT;
 xSemaphoreHandle motorSemaphore;
 volatile uint32_t RIT_count;
 volatile uint8_t kumpi;
-volatile bool xuunta;
-volatile bool yuunta;
 
 extern "C" {
 	void RIT_IRQHandler(void) {
-		// This used to check if a context switch is required
 		portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-		// Tell timer that we have processed the interrupt.
-		// Timer then removes the IRQ until next match occurs
-		Chip_RIT_ClearIntStatus(LPC_RITIMER); // clear IRQ flag
+
+		Chip_RIT_ClearIntStatus(LPC_RITIMER);
 		if(RIT_count > 0) {
-//			char asd = RIT_count + '0';
-//			Board_UARTPutSTR("OLLAA IRSSISSA!\r\n");
-//			Board_UARTPutChar(asd);
-//			Board_UARTPutSTR("\r\n");
 			RIT_count--;
-			// do something useful here...
-			xSemaphoreGiveFromISR( motorSemaphore, &xHigherPriorityTaskWoken );
+			xSemaphoreGiveFromISR(motorSemaphore, &xHigherPriorityTaskWoken);
 		} else {
-			Chip_RIT_Disable(LPC_RITIMER); // disable timer
-			// Give semaphore and set context switch flag if a higher priority task was woken up
+			Chip_RIT_Disable(LPC_RITIMER);
 			xSemaphoreGiveFromISR(sbRIT, &xHigherPriorityTaskWoken);
 		}
-		// End the ISR and (possibly) do a context switch
 		portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
 	}
 }
@@ -96,14 +86,20 @@ void executeCommand(PlotterData *pd, Servo &penServo) {
 				// home
 				break;
 		}
-	} else if(pd->gorm == 'M' && pd->gormNum == 1) {
-		switch(pd->targetPen) {
-			case 90:
-				penServo.penDown();
-				break;
-			case 130:
-				penServo.penUp();
-				break;
+	}
+	else if(pd->gorm == 'M' && pd->gormNum == 1) {
+//		switch(pd->targetPen) {
+//			case 90:
+//				penServo.penDown();
+//				break;
+//			case 130:
+//				penServo.penUp();
+//				break;
+//		}
+		if(pd->targetPen > 120) {
+			penServo.penUp();
+		} else {
+			penServo.penDown();
 		}
 	}
 }
@@ -113,72 +109,21 @@ void taskExecute(void *pvParameters) {
 	PlotterData *plotdat = new PlotterData(plotdat->pen, 380, 310);
 	Servo penServo(0, 10);
 	Parser parsakaali;
-//	BaseType_t status;
 
 	// caribourate()
-	// init()
-	/*
-	 * test
-	 */
-//	std::string *rawCommand = new std::string("G1 X0 Y0 A0");
-//	parsakaali.generalParse(plotdat, *rawCommand);
-//	executeCommand(plotdat, penServo);
-//	delete rawCommand;
-
-//	vTaskDelay(100);
-
-//	std::string *com2 = new std::string("G1 X40 Y80 A0");
-//	parsakaali.generalParse(plotdat, *com2);
-//	executeCommand(plotdat, penServo);
-//	delete com2;
-////	vTaskDelay(100);
-//
-//	std::string *com3 = new std::string("G1 X80 Y0 A0");
-//	parsakaali.generalParse(plotdat, *com3);
-//	calculateDrive(plotdat);
-//	delete com3;
-////	vTaskDelay(100);
-//
-//	std::string *com4 = new std::string("G1 X0 Y0 A0");
-//	parsakaali.generalParse(plotdat, *com4);
-//	executeCommand(plotdat, penServo);
-//	delete com4;
 
 	for(;;) {
 		std::string *rawCommand;
 		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
 		parsakaali.generalParse(plotdat, *rawCommand);
 		executeCommand(plotdat, penServo);
-//		vTaskDelay(10);
+		vTaskDelay(5);
 //		parsakaali.debug(plotdat, *rawCommand, false);
 		delete rawCommand;
 		xSemaphoreGive(commonHandles->readyToReceive);
+
 	}
 }
-
-//void taskExecute(void *pvParameters) {
-//	Handles *commonHandles = (Handles*) pvParameters;
-////	PlotterData plotdat(plotdat.pen, 380, 310);
-//	PlotterData *plotdat = new PlotterData(plotdat->pen, 380, 310);
-//	Parser parsakaali;
-//
-////	plotdat.resetCompack();
-////	parsakaali.debug(plotdat, *rawCommand, false);		// set true or false to see all info in compack or given command
-////	plotdat.resetCompack(); // -.,-.,-.,
-////	RIT_count = 0;
-////	ITM_write("VALMIS\r\n");
-//	for(;;) {
-//
-////		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
-////		parsakaali.generalParse(plotdat, *rawCommand);
-////		calculateDrive(plotdat);
-////		justDrive(plotdat);
-//////		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
-////		plotdat.resetCompack(); // -.,-.,-.,
-////		RIT_count = 0;
-////		xSemaphoreGive(commonHandles->readyToReceive);
-//	}
-//}
 
 void calculateDrive(PlotterData *pd) {
 
@@ -196,15 +141,7 @@ void calculateDrive(PlotterData *pd) {
 	double ratioX = (double) abs(stepDeltaX) / stepDeltaMax;
 	double ratioY = (double) abs(stepDeltaY) / stepDeltaMax;
 
-
-
-
-//	pd->absoluteCurrentX = pd->absoluteTargetX;
-//	pd->absoluteCurrentY = pd->absoluteTargetY;
-//	pd->resetCompack();
 	justDrive(pd, stepAbsoluteCurrentX, stepAbsoluteCurrentY, stepAbsoluteTargetX, stepAbsoluteTargetY, stepDeltaX, stepDeltaY, ratioX, ratioY);
-//	pd->absoluteCurrentX = pd->absoluteTargetX;
-//	pd->absoluteCurrentY = pd->absoluteTargetY;
 }
 
 void justDrive(PlotterData *pd,
@@ -215,56 +152,40 @@ void justDrive(PlotterData *pd,
 
 	DigitalIoPin dirPinX(0, 28, DigitalIoPin::output, false);
 	DigitalIoPin dirPinY(1, 0, DigitalIoPin::output, false);
-//	char commandBuffer[400];
-//	memset(commandBuffer, 0, sizeof(commandBuffer));
-//	const char *format =
-//			"curX: %.2f\r\n"
-//			"curY: %.2f\r\n"
-//			"tarX: %.2f\r\n"
-//			"tarY: %.2f\r\n"
-//
-//			"dA: %d\r\n"
-//			"dB: %d\r\n"
-////			"dMax: %.2f\r\n"
-//			"ratioX: %.2f\r\n"
-//			"ratioY: %.2f\r\n";
-////	memset(commandBuffer, 0, sizeof(commandBuffer));
-//	snprintf(commandBuffer, sizeof(commandBuffer), format,
-//			pd->absoluteCurrentX,
-//			pd->absoluteCurrentY,
-//			pd->absoluteTargetX,
-//			pd->absoluteTargetY,
-//
-//			stepDeltaX,
-//			stepDeltaY,
-////			stepDeltaMax,
-//			ratioX,
-//			ratioY);
-//
-//	ITM_write(commandBuffer);
-	int poro = 500;
+
+	int poro = 400;
 	double countX = 0;
 	double countY = 0;
 
 	bool dirx = true;
 	bool diry = true;
 	dirPinX.write(dirx);
-	dirPinY.write(dirx);
+	dirPinY.write(diry);
+//	dirPinX.write(pd->dirX);
+//	dirPinY.write(pd->dirY);
 
 	while((stepAbsoluteCurrentX != stepAbsoluteTargetX) || (stepAbsoluteCurrentY != stepAbsoluteTargetY)) {
 
 		if(stepAbsoluteCurrentX != stepAbsoluteTargetX){
 			countX += ratioX;
-
 			if(countX >= 1) {
 				if(stepDeltaX > 0) {
 //					xuunta = true;
+//					dirPinX.write(true);
+//					if(pd->dirX != true) {
+//						dirPinX.write(true);
+////						pd->dirX = true;
+//					}
 					if(dirx != true) {
 						dirPinX.write(true);
 					}
 					stepAbsoluteCurrentX += 1;
 				} else {
 //					xuunta = false;
+//					if(pd->dirX != false) {
+//						dirPinX.write(false);
+////						pd->dirX = false;
+//					}
 					if(dirx != false) {
 						dirPinX.write(false);
 					}
@@ -279,16 +200,23 @@ void justDrive(PlotterData *pd,
 
 		if(stepAbsoluteCurrentY != stepAbsoluteTargetY){
 			countY += ratioY;
-
 			if(countY >= 1) {
 				if(stepDeltaY > 0) {
 //					yuunta = true;
+//					if(pd->dirY != false) {
+//						dirPinY.write(false);
+////						pd->dirY = false;
+//					}
 					if(diry != false) {
 						dirPinY.write(false);
 					}
 					stepAbsoluteCurrentY += 1;
 				} else {
 //					yuunta = false;
+//					if(pd->dirY != true) {
+//						dirPinY.write(true);
+////						pd->dirY = true;
+//					}
 					if(diry != true) {
 						dirPinY.write(true);
 					}
@@ -300,20 +228,13 @@ void justDrive(PlotterData *pd,
 				countY -= 1;
 			}
 		}
-		if(poro > 100) {
-			poro -= 2;
+		if(poro > 200) {
+			poro -= 3;
 		}
 	}
 
-
-
-//	if(!((pd.absoluteCurrentX == pd.absoluteTargetX) && (pd.absoluteCurrentY = pd.absoluteTargetY))) {
-//		/*
-//		 * IT'S A TRAP!
-//		 */
-//		while(1);
-//	}
-
+	pd->dirX = dirx;
+	pd->dirY = diry;
 	pd->absoluteCurrentX = pd->absoluteTargetX;
 	pd->absoluteCurrentY = pd->absoluteTargetY;
 
@@ -344,6 +265,19 @@ void dtaskMotor(void *pvParameters) {
 			stepPinY.write(false);
 			break;
 		}
+
+//		switch(kumpi) {
+//		case 1:
+////			dirPinX.write(xuunta);
+//			stepPinX.write(true);
+//			stepPinX.write(false);
+//			break;
+//		case 2:
+////			dirPinY.write(!yuunta);
+//			stepPinY.write(true);
+//			stepPinY.write(false);
+//			break;
+//		}
 
 
 
