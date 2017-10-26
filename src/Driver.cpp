@@ -274,6 +274,8 @@ void caribourate(PlotterData &pd) {
 
 			pd.axisStepCountX = xStepsTravelled - backupSteps;
 			pd.axisStepCountY = yStepsTravelled - backupSteps;
+			// TODO: steps are calculated from X axis info, but the length constants don't match up
+			// to actual measurements (ratio is off) so on the Y axis actual print length will be off
 			pd.stepsPerMM = (double) pd.axisStepCountX / (double) pd.axisLengthX;
 			xStepsTravelled = 0;
 			yStepsTravelled = 0;
