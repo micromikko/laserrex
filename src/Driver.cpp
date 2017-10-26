@@ -1,5 +1,5 @@
 /*
- * Driver.cpp
+ * Driver.cpp tri trii tri trii tri trii
  *
  *  Created on: 23.10.2017
  *      Author: micromikko
@@ -117,7 +117,7 @@ void taskExecute(void *pvParameters) {
 		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
 		parsakaali.generalParse(plotdat, *rawCommand);
 		executeCommand(plotdat, penServo);
-		vTaskDelay(5);
+//		vTaskDelay(5);
 //		parsakaali.debug(plotdat, *rawCommand, false);
 		delete rawCommand;
 		xSemaphoreGive(commonHandles->readyToReceive);
@@ -159,10 +159,10 @@ void justDrive(PlotterData *pd,
 
 	bool dirx = true;
 	bool diry = true;
-	dirPinX.write(dirx);
-	dirPinY.write(diry);
-//	dirPinX.write(pd->dirX);
-//	dirPinY.write(pd->dirY);
+//	dirPinX.write(dirx);
+//	dirPinY.write(diry);
+	dirPinX.write(pd->dirX);
+	dirPinY.write(pd->dirY);
 
 	while((stepAbsoluteCurrentX != stepAbsoluteTargetX) || (stepAbsoluteCurrentY != stepAbsoluteTargetY)) {
 
@@ -172,23 +172,23 @@ void justDrive(PlotterData *pd,
 				if(stepDeltaX > 0) {
 //					xuunta = true;
 //					dirPinX.write(true);
-//					if(pd->dirX != true) {
-//						dirPinX.write(true);
-////						pd->dirX = true;
-//					}
-					if(dirx != true) {
+					if(pd->dirX != true) {
 						dirPinX.write(true);
+						pd->dirX = true;
 					}
+//					if(dirx != true) {
+//						dirPinX.write(true);
+//					}
 					stepAbsoluteCurrentX += 1;
 				} else {
 //					xuunta = false;
-//					if(pd->dirX != false) {
-//						dirPinX.write(false);
-////						pd->dirX = false;
-//					}
-					if(dirx != false) {
+					if(pd->dirX != false) {
 						dirPinX.write(false);
+						pd->dirX = false;
 					}
+//					if(dirx != false) {
+//						dirPinX.write(false);
+//					}
 					stepAbsoluteCurrentX -= 1;
 				}
 
@@ -203,23 +203,23 @@ void justDrive(PlotterData *pd,
 			if(countY >= 1) {
 				if(stepDeltaY > 0) {
 //					yuunta = true;
-//					if(pd->dirY != false) {
-//						dirPinY.write(false);
-////						pd->dirY = false;
-//					}
-					if(diry != false) {
+					if(pd->dirY != false) {
 						dirPinY.write(false);
+						pd->dirY = false;
 					}
+//					if(diry != false) {
+//						dirPinY.write(false);
+//					}
 					stepAbsoluteCurrentY += 1;
 				} else {
 //					yuunta = false;
-//					if(pd->dirY != true) {
-//						dirPinY.write(true);
-////						pd->dirY = true;
-//					}
-					if(diry != true) {
+					if(pd->dirY != true) {
 						dirPinY.write(true);
+						pd->dirY = true;
 					}
+//					if(diry != true) {
+//						dirPinY.write(true);
+//					}
 					stepAbsoluteCurrentY -= 1;
 				}
 
@@ -233,8 +233,8 @@ void justDrive(PlotterData *pd,
 		}
 	}
 
-	pd->dirX = dirx;
-	pd->dirY = diry;
+//	pd->dirX = dirx;
+//	pd->dirY = diry;
 	pd->absoluteCurrentX = pd->absoluteTargetX;
 	pd->absoluteCurrentY = pd->absoluteTargetY;
 
