@@ -37,6 +37,7 @@ PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouE
 	this->axisStepCountY = 0;		// steps
 
 	// #define STEPS_PER_MM 87.58
+	// 87.58
 	this->stepsPerMM = 87.58; // -.,-.,-.,
 
 	/*
