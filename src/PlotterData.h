@@ -44,24 +44,17 @@ public:
 	int axisStepCountX;		// steps
 	int axisStepCountY;		// steps
 
-	// #define STEPS_PER_MM 87.58
-	// SHOULD BE THE SAME, SO
-	double stepsPerMM;
-//	int stepsPerMMX;		// steps
-//	int stepsPerMMY;		// steps
 
+	double stepsPerMM;			// #define STEPS_PER_MM 87.58
 
 	/*
 	 * Current
 	 */
-	double currentX;		// mm
-	double currentY;		// mm
+	double absoluteCurrentX;		// mm
+	double absoluteCurrentY;		// mm
 
-	int currentStepsX;		// steps
-	int currentStepsY;		// steps
-
-	int currentPenPos;		// pwm
-	int currentLaserPos;	// pwm
+	int currentPenPos;				// pwm
+	int currentLaserPos;			// pwm
 
 	/*
 	 * CommandPacket
@@ -69,32 +62,20 @@ public:
 	char gorm;				// G or M
 	int gormNum;			// G: 1, 28; M: 1, 4, 10
 
-	double targetX;			// mm
-	double targetY;			// mm
-
-	double targetStepsX;	// steps
-	double targetStepsY;	// steps
+	/*
+	 * compack
+	 */
+	double absoluteTargetX;			// mm
+	double absoluteTargetY;			// mm
 
 	int targetPen;			// pwm
 	int targetLaser;		// pwm
 
 	long auxDelay;			// us
 
-	double dX;				// mm
-	double dY;				// mm
-
-	int dStepsX;			// steps
-	int dStepsY;			// steps
-
-	int dStepsMax;			// steps
-
-	double stepIntervalX;	// fraction of step
-	double stepIntervalY;	// fraction of step
-
 	void calculateStepsPerMM();
 	int convertToSteps(const double before);
 
-//	CommandPacket *compack;
 	void resetCompack();
 private:
 

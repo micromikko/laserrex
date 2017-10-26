@@ -86,104 +86,90 @@ void RIT_init() {
 	motorSemaphore = xSemaphoreCreateBinary();
 }
 
-void taskExecute(void *pvParameters) {
-	Handles *commonHandles = (Handles*) pvParameters;
-	PlotterData plotdat;
-	Parser parsakaali;
-
-//	BaseType_t status;
-
-	// caribourate()
-	// init()
-	for(;;) {
-		std::string *rawCommand;
-		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
-		parsakaali.generalParse(plotdat, *rawCommand);
-		parsakaali.debug(plotdat, *rawCommand, false);
-
-		calculateDrive(plotdat);
-		justDrive(plotdat);
-//				parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
-		plotdat.resetCompack(); // -.,-.,-.,
-		delete rawCommand;
-
-		xSemaphoreGive(commonHandles->readyToReceive);
-	}
-}
-void caribourate(PlotterData &pd) {
-
-}
-
 //void taskExecute(void *pvParameters) {
 //	Handles *commonHandles = (Handles*) pvParameters;
-//	PlotterData plotdat(plotdat.pen, 380, 310);
+//	PlotterData plotdat;
 //	Parser parsakaali;
-//	std::string *rawCommand = new std::string("G1 X30 Y30 A0");
-//	BaseType_t status;
 //
-////	 caribourate(plotdat);
+////	BaseType_t status;
+//
+//	// caribourate()
 //	// init()
-//	parsakaali.generalParse(plotdat, *rawCommand);
-//	parsakaali.debug(plotdat, *rawCommand, false);
-//	calculateDrive(plotdat);
-//	justDrive(plotdat);
-////	plotdat.resetCompack();
-//
-//	std::string *com2 = new std::string("G1 X0 Y-20 A0");
-//	parsakaali.generalParse(plotdat, *com2);
-//	parsakaali.debug(plotdat, *com2, false);
-//	calculateDrive(plotdat);
-//	justDrive(plotdat);
-////	plotdat.resetCompack();
-//
-//	std::string *com3 = new std::string("G1 X30 Y0 A0");
-//	parsakaali.generalParse(plotdat, *com3);
-//	parsakaali.debug(plotdat, *com3, false);
-//	calculateDrive(plotdat);
-//	justDrive(plotdat);
-////	plotdat.resetCompack();
-////	parsakaali.debug(plotdat, *rawCommand, false);		// set true or false to see all info in compack or given command
-////	plotdat.resetCompack(); // -.,-.,-.,
-////	RIT_count = 0;
-//	ITM_write("VALMIS\r\n");
 //	for(;;) {
+//		std::string *rawCommand;
+//		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
+//		parsakaali.generalParse(plotdat, *rawCommand);
+//		parsakaali.debug(plotdat, *rawCommand, false);
 //
-////		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
-////		parsakaali.generalParse(plotdat, *rawCommand);
-////		calculateDrive(plotdat);
-////		justDrive(plotdat);
-//////		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
-////		plotdat.resetCompack(); // -.,-.,-.,
-////		RIT_count = 0;
-////		xSemaphoreGive(commonHandles->readyToReceive);
+//		calculateDrive(plotdat);
+////		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
+//		plotdat.resetCompack(); // -.,-.,-.,
+//		delete rawCommand;
+//
+//		xSemaphoreGive(commonHandles->readyToReceive);
 //	}
 //}
 
+void taskExecute(void *pvParameters) {
+	Handles *commonHandles = (Handles*) pvParameters;
+	PlotterData plotdat(plotdat.pen, 380, 310);
+	Parser parsakaali;
+	std::string *rawCommand = new std::string("G1 X30 Y50 A0");
+//	BaseType_t status;
+
+//	 caribourate(plotdat);
+	// init()
+	parsakaali.generalParse(plotdat, *rawCommand);
+//	parsakaali.debug(plotdat, *rawCommand, false);
+	calculateDrive(plotdat);
+	delete rawCommand;
+//	plotdat.resetCompack();
+
+	std::string *com2 = new std::string("G1 X0 Y-20 A0");
+	parsakaali.generalParse(plotdat, *com2);
+//	parsakaali.debug(plotdat, *com2, false);
+	calculateDrive(plotdat);
+//	plotdat.resetCompack();
+	delete com2;
+
+	std::string *com3 = new std::string("G1 X30 Y0 A0");
+	parsakaali.generalParse(plotdat, *com3);
+//	parsakaali.debug(plotdat, *com3, false);
+	calculateDrive(plotdat);
+	delete com3;
+//	plotdat.resetCompack();
+//	parsakaali.debug(plotdat, *rawCommand, false);		// set true or false to see all info in compack or given command
+//	plotdat.resetCompack(); // -.,-.,-.,
+//	RIT_count = 0;
+//	ITM_write("VALMIS\r\n");
+	for(;;) {
+
+//		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
+//		parsakaali.generalParse(plotdat, *rawCommand);
+//		calculateDrive(plotdat);
+//		justDrive(plotdat);
+////		parsakaali.debug(*rawCommand, false);		// set true or false to see all info in compack or given command
+//		plotdat.resetCompack(); // -.,-.,-.,
+//		RIT_count = 0;
+//		xSemaphoreGive(commonHandles->readyToReceive);
+	}
+}
+
 void calculateDrive(PlotterData &pd) {
-	ITM_write("HEI HOI\r\n");
-	pd.dX = pd.targetX - pd.currentX;
-	pd.dY = pd.targetY - pd.currentY;
 
-//	-.,-.,-.,
-//	if((sqrt(pd.dX * pd.dX + pd.dY * pd.dY) < 0.001)) {
-//		return;
-//	}
+	int stepAbsoluteCurrentX = pd.convertToSteps(pd.absoluteCurrentX);
+	int stepAbsoluteCurrentY = pd.convertToSteps(pd.absoluteCurrentY);
 
-	pd.currentStepsX = pd.convertToSteps(pd.currentX);
-	pd.currentStepsY = pd.convertToSteps(pd.currentY);
+	int stepAbsoluteTargetX = pd.convertToSteps(pd.absoluteTargetX);
+	int stepAbsoluteTargetY = pd.convertToSteps(pd.absoluteTargetY);
 
-	pd.targetStepsX = pd.convertToSteps(pd.targetX);
-	pd.targetStepsY = pd.convertToSteps(pd.targetY);
-//	pd.targetStepsX = pd.stepsPerMM * pd.targetX;
-//	pd.targetStepsY = pd.stepsPerMM * pd.targetY;
+	int stepDeltaX = stepAbsoluteTargetX - stepAbsoluteCurrentX;
+	int stepDeltaY = stepAbsoluteTargetY - stepAbsoluteCurrentY;
 
-	pd.dStepsX = pd.targetStepsX - pd.currentStepsX;
-	pd.dStepsY = pd.targetStepsY - pd.currentStepsY;
+	double stepDeltaMax = std::max(abs(stepDeltaX), abs(stepDeltaY));
 
-	pd.dStepsMax = std::max(abs(pd.dStepsX), abs(pd.dStepsY));
-
-	pd.stepIntervalX = (double) abs(pd.dStepsX) / (double) pd.dStepsMax;
-	pd.stepIntervalY = (double) abs(pd.dStepsY) / (double) pd.dStepsMax;
+	double ratioX = (double) abs(stepDeltaX) / stepDeltaMax;
+	double ratioY = (double) abs(stepDeltaY) / stepDeltaMax;
 
 //	char commandBuffer[400];
 //	memset(commandBuffer, 0, sizeof(commandBuffer));
@@ -192,12 +178,7 @@ void calculateDrive(PlotterData &pd) {
 //			"curY: %.2f\r\n"
 //			"tarX: %.2f\r\n"
 //			"tarY: %.2f\r\n"
-//			"dX: %.2f\r\n"
-//			"dY: %.2f\r\n"
-//			"curA: %d\r\n"
-//			"curB: %d\r\n"
-//			"tarA: %ld\r\n"
-//			"tarB: %ld\r\n"
+//
 //			"dA: %d\r\n"
 //			"dB: %d\r\n"
 //			"dMax: %.2f\r\n"
@@ -205,154 +186,88 @@ void calculateDrive(PlotterData &pd) {
 //			"stepB: %.2f\r\n";
 //	memset(commandBuffer, 0, sizeof(commandBuffer));
 //	snprintf(commandBuffer, sizeof(commandBuffer), format,
-//			pd.currentX,
-//			pd.currentY,
-//			pd.targetX,
-//			pd.targetY,
-//			pd.dX,
-//			pd.dY,
-//			pd.currentStepsX,
-//			pd.currentStepsY,
-//			pd.targetStepsX,
-//			pd.targetStepsY,
-//			pd.dStepsX,
-//			pd.dStepsY,
-//			pd.dStepsMax,
-//			pd.stepIntervalX,
-//			pd.stepIntervalY);
+//			pd.absoluteCurrentX,
+//			pd.absoluteCurrentY,
+//			pd.absoluteTargetX,
+//			pd.absoluteTargetY,
+//
+//			stepDeltaX,
+//			stepDeltaY,
+//			stepDeltaMax,
+//			ratioX,
+//			ratioX);
+//
 //	ITM_write(commandBuffer);
 //	pd.currentX = pd.targetX;
 //	pd.currentY = pd.targetY;
+
+//	pd.absoluteCurrentX = pd.absoluteTargetX;
+//	pd.absoluteCurrentY = pd.absoluteTargetY;
+//	pd.resetCompack();
+	justDrive(pd, stepDeltaX, stepDeltaY, ratioX, ratioY);
 }
 
-void justDrive(PlotterData &pd) {
-//	 curX = currentX;
-//	 curY = currentY;
-//	 tarX = targetX;
-//	 tarY = targetY;
-//
-//	 posA = currentStepsX;
-//	 posB = currentStepsY;
-//	 tarA = targetStepsX;
-//	 tarB = targetStepsY;
-//
-//	 stepA = stepIntervalX;
-//	 stepB = stepIntervalY;
-//
-//	 cntA = countX;
-//	 cntB = countY;
+void justDrive(PlotterData &pd, int stepDeltaX, int stepDeltaY, double ratioX, double ratioY) {
 
-	int countX = 0;
-	int countY = 0;
+	double countX = 0;
+	double countY = 0;
 
-	while((pd.currentStepsX != pd.targetStepsX) || (pd.currentStepsY != pd.targetStepsY)) {
-		// move A
-		if(pd.currentStepsX != pd.targetStepsX){
-			countX += pd.stepIntervalX;
+	while((pd.absoluteCurrentX != pd.absoluteTargetX) || (pd.absoluteCurrentY != pd.absoluteTargetY)) {
+
+		if(pd.absoluteCurrentX != pd.absoluteTargetX){
+			countX += ratioX;
 
 			if(countX >= 1) {
-				if(pd.dStepsX > 0) {
+				if(stepDeltaX > 0) {
 //					pd.dirX = true;
 					xuunta = true;
+					pd.absoluteCurrentX += 1;
 				} else {
 //					pd.dirX = false;
 					xuunta = false;
+					pd.absoluteCurrentX -= 1;
 				}
 
-				if(pd.dStepsX > 0) {
-					pd.currentStepsX += 1;
-				} else {
-					pd.currentStepsX -= 1;
-				}
 				kumpi = 1;
-				RIT_start(1, 750);
+				RIT_start(10, 1000);
 				countX -= 1;
 			}
 		}
 
-		if(pd.currentStepsY != pd.targetStepsY){
-			countY += pd.stepIntervalY;
+		if(pd.absoluteCurrentY != pd.absoluteTargetY){
+			countY += ratioY;
 
 			if(countY >= 1) {
-				if(pd.dStepsY > 0) {
-//					pd.dirY = true;
+				if(stepDeltaY > 0) {
+//					pd.dirX = true;
 					yuunta = true;
+					pd.absoluteCurrentY += 1;
 				} else {
-//					pd.dirY = false;
+//					pd.dirX = false;
 					yuunta = false;
+					pd.absoluteCurrentY -= 1;
 				}
 
-				if(pd.dStepsY > 0) {
-					pd.currentStepsY += 1;
-				} else {
-					pd.currentStepsY -= 1;
-				}
-				kumpi = 2;
-				RIT_start(1, 750);
+				kumpi = 1;
+				RIT_start(10, 1000);
 				countY -= 1;
 			}
 		}
-		kumpi = 0;
 	}
-//	for(int i = 0 ;(pd.currentStepsX != pd.targetStepsX)||(pd.currentStepsY != pd.targetStepsY); i++) {
-//		// move A
-//		if(pd.currentStepsX != pd.targetStepsX){
-//			countX += pd.stepIntervalX;
-//
-//			if(countX >= 1) {
-//				if(pd.dStepsX > 0) {
-//					pd.dirX = true;
-//				} else {
-//					pd.dirX = false;
-//				}
-//
-//				if(pd.dStepsX > 0) {
-//					pd.currentStepsX += 1;
-//				} else {
-//					pd.currentStepsX -= 1;
-//				}
-//				kumpi = 1;
-//				RIT_start(1, 1000);
-//				countX -= 1;
-//			}
-//		}
-//
-//		if(pd.currentStepsY != pd.targetStepsY){
-//			countY += pd.stepIntervalY;
-//
-//			if(countY >= 1) {
-//				if(pd.dStepsY > 0) {
-//					pd.dirY = true;
-//				} else {
-//					pd.dirY = false;
-//				}
-//
-//				if(pd.dStepsY > 0) {
-//					pd.currentStepsY += 1;
-//				} else {
-//					pd.currentStepsY -= 1;
-//				}
-//				kumpi = 1;
-//				RIT_start(1, 1000);
-//				countX -= 1;
-//			}
-//		}
-//		// move B
-////		if(posB!=tarB){
-////			cntB+=stepB;
-////			if(cntB>=1){
-////				d = dB>0?motorBfw:motorBbk;
-////				posB+=(dB>0?1:-1);
-////				stepperMoveB(d);
-////				cntB-=1;
-////			}
-////		}
+
+
+//	if(!((pd.absoluteCurrentX == pd.absoluteTargetX) && (pd.absoluteCurrentY = pd.absoluteTargetY))) {
+//		/*
+//		 * IT'S A TRAP!
+//		 */
+//		while(1);
 //	}
 
-	pd.currentStepsX = pd.targetStepsX;
-	pd.currentStepsY = pd.targetStepsY;
-	pd.currentX = pd.targetX;
-	pd.currentY = pd.targetY;
+//	pd.currentStepsX = pd.targetStepsX;
+//	pd.currentStepsY = pd.targetStepsY;
+	pd.absoluteCurrentX = pd.absoluteTargetX;
+	pd.absoluteCurrentY = pd.absoluteTargetY;
+
 	pd.resetCompack();
 }
 
@@ -368,31 +283,21 @@ void dtaskMotor(void *pvParameters) {
 	while(1) {
 		xSemaphoreTake(motorSemaphore, (TickType_t) portMAX_DELAY );
 
-		switch(kumpi) {
-		case 1:
-			dirPinX.write(xuunta);
-			stepPinX.write(true);
-			stepPinX.write(false);
-			break;
-		case 2:
-			dirPinY.write(yuunta);
-			stepPinY.write(true);
-			stepPinY.write(false);
-			break;
-		}
-//		if(kumpi == 1) {
+//		switch(kumpi) {
+//		case 1:
+//			dirPinX.write(xuunta);
 //			stepPinX.write(true);
 //			stepPinX.write(false);
-//		}
-//
-//		if(kumpi == 2) {
+//			break;
+//		case 2:
+//			dirPinY.write(yuunta);
 //			stepPinY.write(true);
 //			stepPinY.write(false);
+//			break;
 //		}
+
 
 
 	}
 }
-
-
 
