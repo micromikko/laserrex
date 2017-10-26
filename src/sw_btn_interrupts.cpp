@@ -15,11 +15,10 @@ SemaphoreHandle_t limit_sem;
 
 DigitalIoPin sw1(0, 8, DigitalIoPin::pullup, true);
 DigitalIoPin sw2(1, 6, DigitalIoPin::pullup, true);
-DigitalIoPin x1d(0, 29, DigitalIoPin::pullup, true);
-DigitalIoPin x2(0, 9, DigitalIoPin::pullup, true);
-DigitalIoPin y1(1, 3, DigitalIoPin::pullup, true);
-DigitalIoPin y2(0, 0, DigitalIoPin::pullup, true);
-
+DigitalIoPin ls1(0, 29, DigitalIoPin::pullup, true);
+DigitalIoPin ls2(0, 9, DigitalIoPin::pullup, true);
+DigitalIoPin ls3(1, 3, DigitalIoPin::pullup, true);
+DigitalIoPin ls4(0, 0, DigitalIoPin::pullup, true);
 
 extern "C" {
 void PIN_INT0_IRQHandler(void) {
@@ -178,7 +177,7 @@ void dtaskHardStop(void *pvParameters) {
 	// TODO: Set priority in main to highest
 
 	/* Wait for a sempahore from IRQ handlers */
-	xSemaphoreTake(limit_sem, portMAX_DELAY);
+	BaseType_t status = xSemaphoreTake(limit_sem, portMAX_DELAY);
 
 	/* Disable interrupts for switches and the RIT timer to
 	 * make sure the stepper motors stop, at this point
