@@ -214,7 +214,7 @@ void caribourate(PlotterData &pd) {
 		/* Back up from limit switches */
 		for (int i; i < backupSteps; i++) {
 			if (axisNr == 0) {
-				driveX(false, pd.dirX, dirPinX, pd);
+				driveX(true, pd.dirX, dirPinX, pd);
 			} else {
 				driveY(true, pd.dirY, dirPinY, pd);
 			}
