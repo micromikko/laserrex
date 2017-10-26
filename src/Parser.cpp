@@ -56,10 +56,10 @@ void Parser::mcodeParse(PlotterData &plotdat, char *c_comstr) {
 void Parser::xyParse(PlotterData &plotdat, char *c_comstr) {
 
 	char *pEnd;
-	plotdat.targetX = strtod(c_comstr, &pEnd);
+	plotdat.absoluteTargetX = strtod(c_comstr, &pEnd);
 	c_comstr = pEnd + 2;
 
-	plotdat.targetY = strtod(c_comstr, &pEnd);
+	plotdat.absoluteTargetY = strtod(c_comstr, &pEnd);
 	c_comstr = pEnd + 2;
 	
 	plotdat.auxDelay = strtol(c_comstr, &pEnd, 10);
@@ -110,7 +110,7 @@ void Parser::debug(PlotterData &plotdat, std::string stringula, bool showAll) {
 			const char *format = "gorm: %c\r\ngormNum: %d\r\ntargetX: %.2f\r\ntargetY: %.2f\r\nauxDelay: %d\r\ntargetPen: %d\r\ntargetLaser: %d\r\n";
 			memset(commandBuffer, 0, sizeof(commandBuffer));
 			snprintf(commandBuffer, sizeof(commandBuffer), format, plotdat.gorm, plotdat.gormNum,
-					plotdat.targetX, plotdat.targetY, plotdat.auxDelay, plotdat.targetPen, plotdat.targetLaser);
+					plotdat.absoluteTargetX, plotdat.absoluteTargetY, plotdat.auxDelay, plotdat.targetPen, plotdat.targetLaser);
 			ITM_write(commandBuffer);
 		} else {
 			if(plotdat.gorm == 'G') {
@@ -118,7 +118,7 @@ void Parser::debug(PlotterData &plotdat, std::string stringula, bool showAll) {
 					const char *format = "%c%d X%.2f Y%.2f A%d\r\n";
 					memset(commandBuffer, 0, sizeof(commandBuffer));
 					snprintf(commandBuffer, sizeof(commandBuffer), format, plotdat.gorm, plotdat.gormNum,
-							plotdat.targetX, plotdat.targetY, plotdat.auxDelay);
+							plotdat.absoluteTargetX, plotdat.absoluteTargetY, plotdat.auxDelay);
 					ITM_write(commandBuffer);
 				} else if(plotdat.gormNum == 28) {
 					const char *format = "%c%d\r\n";

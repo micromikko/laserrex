@@ -18,7 +18,7 @@ void caribourate(PlotterData &pd);
 
 void taskExecute(void *pvParameters);
 void calculateDrive(PlotterData &pd);
-void justDrive(PlotterData &pd);
+void justDrive(PlotterData &pd, int stepDeltaX, int stepDeltaY, double ratioX, double ratioY);
 void dtaskMotor(void *pvParameters);
 
 

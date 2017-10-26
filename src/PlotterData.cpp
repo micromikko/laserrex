@@ -8,87 +8,10 @@
 #include "PlotterData.h"
 
 
-
-//PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye) {
-//	switch(kayYouElElEye) {
-//		case none:
-//			this->currentPenPos = 0;
-//			this->currentLaserPos = 0;
-//			break;
-//		case pen:
-//			this->currentPenPos = 130;
-//			this->currentLaserPos = 0;
-//			break;
-//		case laser:
-//			this->currentPenPos = 0;
-//			this->currentLaserPos = 0;
-//			break;
-//	}
-//
-//	this->dirX = false;
-//	this->dirY = false;
-//
-//	this->axisLengthX = 380;		// mm
-//	this->axisLengthY = 310;		// mm
-//
-//	this->stepdelay_min = 0;		//=200;
-//	this->stepdelay_max = 0;		//=1000;
-//
-//	/*
-//	 * Set during caribouration
-//	 */
-//	this->axisStepCountX = 0;		// steps
-//	this->axisStepCountY = 0;		// steps
-//
-//	// #define STEPS_PER_MM 87.58
-//	// SHOULD BE THE SAME, SO
-//	this->stepsPerMM = 0;
-////	int stepsPerMMX;		// steps
-////	int stepsPerMMY;		// steps
-//
-//
-//	/*
-//	 * Current
-//	 */
-//	this->currentX = 0;		// mm
-//	this->currentY = 0;		// mm
-//
-//	this->currentStepsX = 0;		// steps
-//	this->currentStepsY = 0;		// steps
-//
-//	/*
-//	 * CommandPacket
-//	 */
-//	this->gorm = 0;				// G or M
-//	this->gormNum = 0;			// G: 1, 28; M: 1, 4, 10
-//
-//	this->targetX = 0;			// mm
-//	this->targetY = 0;			// mm
-//
-//	this->targetStepsX = 0;	// steps
-//	this->targetStepsY = 0;	// steps
-//
-//	this->targetPen = 0;			// pwm
-//	this->targetLaser = 0;		// pwm
-//
-//	this->auxDelay = 0;			// us
-//
-//	this->dX = 0;				// mm
-//	this->dY = 0;				// mm
-//
-//	this->dStepsX = 0;			// steps
-//	this->dStepsY = 0;			// steps
-//
-//	this->dStepsMax = 0;			// steps
-//
-//	this->stepIntervalX = 0;	// fraction of step
-//	this->stepIntervalY = 0;	// fraction of step
-//}
-
 PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouElElEye, int axisX, int axisY) {
 	switch(kayYouElElEye) {
 		case none:
-			this->currentPenPos = 0;
+			this->currentPenPos = 90;	// -.,-.,-.,
 			this->currentLaserPos = 0;
 			break;
 		case pen:
@@ -96,13 +19,10 @@ PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouE
 			this->currentLaserPos = 0;
 			break;
 		case laser:
-			this->currentPenPos = 0;
+			this->currentPenPos = 130;
 			this->currentLaserPos = 0;
 			break;
 	}
-
-	this->dirX = false;
-	this->dirY = false;
 
 	this->axisLengthX = axisX;		// mm
 	this->axisLengthY = axisY;		// mm
@@ -117,20 +37,13 @@ PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouE
 	this->axisStepCountY = 0;		// steps
 
 	// #define STEPS_PER_MM 87.58
-	// SHOULD BE THE SAME, SO
 	this->stepsPerMM = 87.58; // -.,-.,-.,
-//	int stepsPerMMX;		// steps
-//	int stepsPerMMY;		// steps
-
 
 	/*
 	 * Current
 	 */
-	this->currentX = 0;		// mm
-	this->currentY = 0;		// mm
-
-	this->currentStepsX = 0;		// steps
-	this->currentStepsY = 0;		// steps
+	this->absoluteCurrentX = 0;		// mm
+	this->absoluteCurrentY = 0;		// mm
 
 	/*
 	 * CommandPacket
@@ -138,27 +51,11 @@ PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouE
 	this->gorm = 0;				// G or M
 	this->gormNum = 0;			// G: 1, 28; M: 1, 4, 10
 
-	this->targetX = 0;			// mm
-	this->targetY = 0;			// mm
-
-	this->targetStepsX = 0;	// steps
-	this->targetStepsY = 0;	// steps
+	this->absoluteTargetX = 0;			// mm
+	this->absoluteTargetY = 0;			// mm
 
 	this->targetPen = 0;			// pwm
 	this->targetLaser = 0;		// pwm
-
-	this->auxDelay = 0;			// us
-
-	this->dX = 0;				// mm
-	this->dY = 0;				// mm
-
-	this->dStepsX = 0;			// steps
-	this->dStepsY = 0;			// steps
-
-	this->dStepsMax = 0;			// steps
-
-	this->stepIntervalX = 0;	// fraction of step
-	this->stepIntervalY = 0;	// fraction of step
 }
 
 PlotterData::~PlotterData() {
@@ -180,26 +77,18 @@ void PlotterData::resetCompack() {
 	this->gorm = 0;
 	this->gormNum = 0;
 
-	this->targetX = 0;
-	this->targetY = 0;
-	this->targetStepsX = 0;
-	this->targetStepsY = 0;
-	this->dX = 0;
-	this->dY = 0;
-	this->dStepsX = 0;
-	this->dStepsY = 0;
-	this->dStepsMax = 0;
-	this->stepIntervalX = 0;
-	this->stepIntervalY = 0;
+	this->absoluteTargetX = 0;
+	this->absoluteTargetY = 0;
+
 	this->auxDelay = 0;
 
-	// -.,-.,-.,
-//	this->targetPen = 0;
-//	this->targetLaser = 0;
+	this->targetPen = 0;
+	this->targetLaser = 0;
 }
 
 int PlotterData::convertToSteps(const double before) {
-	int jaska = (int) (before * this->stepsPerMM);
-	return jaska;
+//	int jaska = (int) (before * this->stepsPerMM);
+//	return jaska;
+	return (int) (before * this->stepsPerMM);
 }
 
