@@ -24,40 +24,37 @@ PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouE
 			break;
 	}
 
-	this->axisLengthX = axisX;		// mm
-	this->axisLengthY = axisY;		// mm
+	this->axisLengthX = axisX;				// mm
+	this->axisLengthY = axisY;				// mm
 
-	this->stepdelay_min = 0;		//=200;
-	this->stepdelay_max = 0;		//=1000;
 
 	/*
 	 * Set during caribouration
 	 */
-	this->axisStepCountX = 0;		// steps
-	this->axisStepCountY = 0;		// steps
+	this->axisStepCountX = 0;				// steps
+	this->axisStepCountY = 0;				// steps
 
-	// #define STEPS_PER_MM 87.58
-	// 87.58
-//	this->stepsPerMM = 87.58; // -.,-.,-.,
+//	this->stepsPerMM = 87.58;
 	double stepsPerMMX = 0;
 	double stepsPerMMY = 0;
+
 	/*
 	 * Current
 	 */
-	this->absoluteCurrentX = 0;		// mm
-	this->absoluteCurrentY = 0;		// mm
+	this->absoluteCurrentX = 0;				// mm
+	this->absoluteCurrentY = 0;				// mm
 
 	/*
 	 * CommandPacket
 	 */
-	this->gorm = 0;				// G or M
-	this->gormNum = 0;			// G: 1, 28; M: 1, 4, 10
+	this->gorm = 0;							// G or M
+	this->gormNum = 0;						// G: 1, 28; M: 1, 4, 10
 
-	this->absoluteTargetX = 0;			// mm
-	this->absoluteTargetY = 0;			// mm
+	this->absoluteTargetX = 0;				// mm
+	this->absoluteTargetY = 0;				// mm
 
-	this->targetPen = 0;			// pwm
-	this->targetLaser = 0;		// pwm
+	this->targetPen = 0;					// pwm
+	this->targetLaser = 0;					// pwm
 
 	this->dirX = true;
 	this->dirY = true;
@@ -70,12 +67,6 @@ PlotterData::~PlotterData() {
 void PlotterData::calculateStepsPerMM() {
 	this->stepsPerMMX = this->axisStepCountX / this->axisLengthX;
 	this->stepsPerMMY = this->axisStepCountY / this->axisLengthY;
-
-////	if(stepsPerMMX == stepsPerMMY) {
-////		this->stepsPerMM = stepsPerMMX;
-////	} else {
-////		while(1);
-////	}
 }
 
 
@@ -92,19 +83,10 @@ void PlotterData::resetCompack() {
 	this->targetLaser = 0;
 }
 
-//int PlotterData::convertToSteps(const double before) {
-////	int jaska = (int) (before * this->stepsPerMM);
-////	return jaska;
-//	return (int) (before * this->stepsPerMM);
-//}
 int PlotterData::convertToStepsX(const double before) {
-//	int jaska = (int) (before * this->stepsPerMM);
-//	return jaska;
 	return (int) (before * this->stepsPerMMX);
 }
 int PlotterData::convertToStepsY(const double before) {
-//	int jaska = (int) (before * this->stepsPerMM);
-//	return jaska;
 	return (int) (before * this->stepsPerMMY);
 }
 

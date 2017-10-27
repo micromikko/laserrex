@@ -23,7 +23,7 @@
 xSemaphoreHandle sbRIT;
 xSemaphoreHandle motorSemaphore;
 volatile uint32_t RIT_count;
-volatile uint8_t kumpi;
+volatile uint8_t motorSelector;
 
 extern "C" {
 	void RIT_IRQHandler(void) {
@@ -46,29 +46,18 @@ extern "C" {
  */
 void RIT_start(int count, int us) {
 	uint64_t cmp_value;
-	// Determine approximate compare value based on clock rate and passed interval
 	cmp_value = (uint64_t) Chip_Clock_GetSystemClockRate() * (uint64_t) us / 1000000;
 
-	// disable timer during configuration
 	Chip_RIT_Disable(LPC_RITIMER);
 	RIT_count = count;
-	// enable automatic clear on when compare value==timer value
-	// this makes interrupts trigger periodically
 	Chip_RIT_EnableCompClear(LPC_RITIMER);
-	// reset the counter
 	Chip_RIT_SetCounter(LPC_RITIMER, 0);
 	Chip_RIT_SetCompareValue(LPC_RITIMER, cmp_value);
-	// start counting
 	Chip_RIT_Enable(LPC_RITIMER);
-	// Enable the interrupt signal in NVIC (the interrupt controller)
 	NVIC_EnableIRQ(RITIMER_IRQn);
-	// wait for ISR to tell that we're done
 	if(xSemaphoreTake(sbRIT, portMAX_DELAY) == pdTRUE) {
-		// Disable the interrupt signal in NVIC (the interrupt controller)
 		NVIC_DisableIRQ(RITIMER_IRQn);
-//		Board_UARTPutSTR("SEMAFOORI OTETTU\r\n");
 	} else {
-		// unexpected error
 	}
 }
 
@@ -82,36 +71,6 @@ void RIT_init() {
 	sbRIT = xSemaphoreCreateBinary();
 	motorSemaphore = xSemaphoreCreateBinary();
 }
-
-
-/* Drive X for one step in the given direction. */
-//void driveX (bool dir, DigitalIoPin &dirPin, PlotterData &pd) {
-//	if (dir != pd.dirX) {
-//		if (dir) {
-//			pd.dirX = true;
-//		} else {
-//			pd.dirX = false;
-//		}
-//		dirPin.write(pd.dirX);
-//	}
-//	kumpi = 1;
-//	RIT_start(1, 250);
-//}
-
-/* Drive Y for one step in the given direction. Y DRIVE VALUES FLIPPED! */
-//void driveY(bool dir, DigitalIoPin &dirPin, PlotterData &pd) {
-//	bool flipDir = !dir;
-//	if (flipDir != pd.dirY) {
-//		if (flipDir) {
-//			pd.dirY = true;
-//		} else {
-//			pd.dirY = false;
-//		}
-//		dirPin.write(pd.dirY);
-//	}
-//	kumpi = 2;
-//	RIT_start(1, 250);
-//}
 
 void disablePinInterrupts() {
 	NVIC_DisableIRQ(PIN_INT0_IRQn);
@@ -144,6 +103,7 @@ void enablePinInterrupts() {
 	NVIC_EnableIRQ(PIN_INT4_IRQn);
 	NVIC_EnableIRQ(PIN_INT5_IRQn);
 }
+
 /* Calibration function that is to be run _before_ GPIO interrupts are initialized! */
 void caribourate(PlotterData &pd) {
 //	disablePinInterrupts();
@@ -173,9 +133,8 @@ void caribourate(PlotterData &pd) {
 
 
 	while (!ls1.read() && !ls2.read() && !ls3.read() && !ls4.read()) {
-//		driveX(false, dirPinX, pd);
 		dirPinX.write(false);
-		kumpi = 1;
+		motorSelector = 1;
 		RIT_start(1, 250);
 	}
 
@@ -193,17 +152,14 @@ void caribourate(PlotterData &pd) {
 	/*
 	 * drive back backupSteps
 	 */
-	for (int i = 0; i < backupSteps; i++) {
-//		driveX(true, dirPinX, pd);
-		dirPinX.write(true);
-		kumpi = 1;
-		RIT_start(1, 250);
-	}
+	dirPinX.write(true);
+	motorSelector = 1;
+	RIT_start(backupSteps, 250);
+
 
 	while (!ls1.read() && !ls2.read() && !ls3.read() && !ls4.read()) {
-//		driveX(true, dirPinX, pd);
 		dirPinX.write(true);
-		kumpi = 1;
+		motorSelector = 1;
 		RIT_start(1, 250);
 		pd.axisStepCountX++;
 	}
@@ -218,21 +174,19 @@ void caribourate(PlotterData &pd) {
 		x2 = &ls4;
 	}
 
-	for (int i = 0; i < backupSteps; i++) {
-//		driveX(false, dirPinX, pd);
-		dirPinX.write(false);
-		kumpi = 1;
-		RIT_start(1, 250);
-	}
+	dirPinX.write(false);
+	motorSelector = 1;
+	RIT_start(backupSteps, 250);
+
 
 	pd.axisStepCountX -= backupSteps;
+
 	/*
 	 * checking y bottom
 	 */
 	while (!ls1.read() && !ls2.read() && !ls3.read() && !ls4.read()) {
-//		driveY(true, dirPinY, pd);
 		dirPinY.write(true);
-		kumpi = 2;
+		motorSelector = 2;
 		RIT_start(1, 250);
 	}
 
@@ -246,20 +200,17 @@ void caribourate(PlotterData &pd) {
 		y1 = &ls4;
 	}
 
-	for (int i = 0; i < backupSteps; i++) {
-//		driveY(false, dirPinY, pd);
-		dirPinY.write(false);
-		kumpi = 2;
-		RIT_start(1, 250);
-	}
+	dirPinY.write(false);
+	motorSelector = 2;
+	RIT_start(backupSteps, 250);
+
 
 	/*
 	 *
 	 */
 	while (!ls1.read() && !ls2.read() && !ls3.read() && !ls4.read()) {
-//		driveY(false, dirPinY, pd);
 		dirPinY.write(false);
-		kumpi = 2;
+		motorSelector = 2;
 		RIT_start(1, 250);
 		pd.axisStepCountY++;
 	}
@@ -274,118 +225,30 @@ void caribourate(PlotterData &pd) {
 		y2 = &ls4;
 	}
 
-	for (int i = 0; i < backupSteps; i++) {
-//		driveY(true, dirPinY, pd);
-		dirPinY.write(true);
-		kumpi = 2;
-		RIT_start(1, 250);
-	}
+	dirPinY.write(true);
+	motorSelector = 2;
+	RIT_start(backupSteps, 250);
+
 
 	pd.axisStepCountY -= backupSteps;
 
-	for(int i = 0; i < pd.axisStepCountX; i++) {
-//		driveX(false, dirPinX, pd);
-		dirPinX.write(false);
-		kumpi = 1;
-		RIT_start(1, 250);
-	}
 
-	for(int i = 0; i < pd.axisStepCountY; i++) {
-//		driveY(true, dirPinY, pd);
-		dirPinY.write(true);
-		kumpi = 2;
-		RIT_start(1, 250);
-	}
+	dirPinX.write(false);
+	motorSelector = 1;
+	RIT_start(pd.axisStepCountX, 250);
+
+
+	dirPinY.write(true);
+	motorSelector = 2;
+	RIT_start(pd.axisStepCountY, 250);
+
 
 
 	pd.absoluteCurrentX = 0.0;
 	pd.absoluteCurrentY = 0.0;
 
 	pd.calculateStepsPerMM();
-//	enablePinInterrupts();
-
-		/* Calculate the amount of steps to back up from the limit switch */
-//		if (backupSteps = 0) {
-//			int stepsTravelled = 0;
-//			while (x1.read() || x2.read()) {
-//				driveX(true, pd.dirX, dirPinX);
-//				stepsTravelled++;
-//			}
-//			backupSteps = (int) ((double) stepsTravelled * (double) 1.5);
-//		}
-		/* Use the calculated amount of backup steps to backup from the Y axis limit switch */
-
-		/* Back up from limit switches */
-//		for (int i; i < backupSteps; i++) {
-//			if (axisNr == 0) {
-//				driveX(true, dirPinX, pd);
-//			} else {
-//				driveY(true, dirPinY, pd);
-//			}
-//		}
-
-
-	/*
-	 * HIH HII! KUTITTAA!
-	 */
-//	bool xFinished = false;
-//	bool yFinished = false;
-//	/* Calculate amount of steps to the other end of the axes and travel back to origin. */
-//	while (!xFinished || !yFinished) {
-//
-//		int xStepsTravelled = 0;
-//		int yStepsTravelled = 0;
-//
-//		/* As long as limit switches aren't pressed, drive forward on the X axis */
-//		if (!x2->read()) {
-//			driveX(true, dirPinX, pd);
-//			xStepsTravelled++;
-//		} else {
-//			xFinished = true;
-//		}
-//
-//		/* As long as limit switches aren't pressed, drive forward on the Y axis */
-//		if (!y2->read()) {
-//			driveY(true, dirPinY, pd);
-//			yStepsTravelled++;
-//		} else {
-//			yFinished = true;
-//		}
-//
-//		/* Do this after we are at the positive end of both axes */
-//		if (xFinished && yFinished) {
-//			/*  */
-//			for (int i = 0; i < backupSteps; i++) {
-//				driveX(false, dirPinX, pd);
-//				driveY(false, dirPinY, pd);
-//			}
-//
-//			pd.axisStepCountX = xStepsTravelled - backupSteps;
-//			pd.axisStepCountY = yStepsTravelled - backupSteps;
-//			// TODO: steps are calculated from X axis info, but the length constants don't match up
-//			// to actual measurements (ratio is off) so on the Y axis actual print length will be off
-//			pd.stepsPerMM = (double) pd.axisStepCountX / (double) pd.axisLengthX;
-//			xStepsTravelled = 0;
-//			yStepsTravelled = 0;
-//			bool xFinished2 = false;
-//			bool yFinished2 = false;
-//
-//			while(!xFinished2 || !yFinished2) {
-//				if (xStepsTravelled < pd.axisStepCountX) {
-//					driveX(false, dirPinX, pd);
-//					xStepsTravelled++;
-//				}
-//				if (yStepsTravelled < pd.axisStepCountY) {
-//					driveY(false, dirPinY, pd);
-//					yStepsTravelled++;
-//				}
-//			}
-//
-//			pd.absoluteCurrentX = 0.0;
-//			pd.absoluteCurrentY = 0.0;
-//		}
-//	}
-//	enablePinInterrupts();
+	enablePinInterrupts();
 }
 
 /*
@@ -426,7 +289,6 @@ void taskExecute(void *pvParameters) {
 	Servo penServo(0, 10);
 	Parser parsakaali;
 //	caribourate(*plotdat);		// rikki
-//	GPIO_interrupt_init();
 	for(;;){
 		std::string *rawCommand;
 		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
@@ -450,8 +312,6 @@ void calculateDrive(PlotterData *pd) {
 
 	int stepDeltaX = stepAbsoluteTargetX - stepAbsoluteCurrentX;
 	int stepDeltaY = stepAbsoluteTargetY - stepAbsoluteCurrentY;
-
-//	double stepsDistance = sqrt((stepDeltaX * stepDeltaX) + (stepDeltaY * stepDeltaY));
 
 	double stepDeltaMax = std::max(abs(stepDeltaX), abs(stepDeltaY));
 
@@ -490,7 +350,6 @@ void justDrive(PlotterData *pd,
 						dirPinX.write(true);
 						pd->dirX = true;
 					}
-//					dirPinX.write(true);
 
 					stepAbsoluteCurrentX += 1;
 				} else {
@@ -498,12 +357,11 @@ void justDrive(PlotterData *pd,
 						dirPinX.write(false);
 						pd->dirX = false;
 					}
-//					dirPinX.write(false);
 
 					stepAbsoluteCurrentX -= 1;
 				}
 
-				kumpi = 1;
+				motorSelector = 1;
 				RIT_start(1, pulseInterval);
 				countX -= 1;
 			}
@@ -517,7 +375,6 @@ void justDrive(PlotterData *pd,
 						dirPinY.write(false);
 						pd->dirY = false;
 					}
-//					dirPinY.write(false);
 
 					stepAbsoluteCurrentY += 1;
 				} else {
@@ -525,13 +382,12 @@ void justDrive(PlotterData *pd,
 						dirPinY.write(true);
 						pd->dirY = true;
 					}
-//					dirPinY.write(true);
 
 
 					stepAbsoluteCurrentY -= 1;
 				}
 
-				kumpi = 2;
+				motorSelector = 2;
 				RIT_start(1, pulseInterval);
 				countY -= 1;
 			}
@@ -540,13 +396,6 @@ void justDrive(PlotterData *pd,
 			pulseInterval -= 2;
 		}
 	}
-
-//	if((stepAbsoluteCurrentX != stepAbsoluteTargetX) && (stepAbsoluteCurrentY != stepAbsoluteTargetY)) {
-//		pd->absoluteCurrentX = pd->absoluteTargetX;
-//		pd->absoluteCurrentY = pd->absoluteTargetY;
-//	} else {
-//		while(1);
-//	}
 
 	pd->absoluteCurrentX = pd->absoluteTargetX;
 	pd->absoluteCurrentY = pd->absoluteTargetY;
@@ -564,7 +413,7 @@ void dtaskMotor(void *pvParameters) {
 	while(1) {
 		xSemaphoreTake(motorSemaphore, (TickType_t) portMAX_DELAY );
 
-		switch(kumpi) {
+		switch(motorSelector) {
 		case 1:
 			stepPinX.write(true);
 			stepPinX.write(false);
