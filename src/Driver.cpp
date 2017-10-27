@@ -1,5 +1,5 @@
 /*
- * Driver.cpp tri trii tri trii tri trii
+ * Driver.cpp
  *
  *  Created on: 23.10.2017
  *      Author: micromikko
@@ -40,6 +40,9 @@ extern "C" {
 	}
 }
 
+/*
+ * starts repetitive interrupt timer
+ */
 void RIT_start(int count, int us) {
 	uint64_t cmp_value;
 	// Determine approximate compare value based on clock rate and passed interval
@@ -68,6 +71,9 @@ void RIT_start(int count, int us) {
 	}
 }
 
+/*
+ * initializes the repetitive interrupt timer
+ */
 void RIT_init() {
 	Chip_RIT_Init(LPC_RITIMER);
 	NVIC_SetPriority(RITIMER_IRQn, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 3 );
@@ -76,6 +82,9 @@ void RIT_init() {
 	motorSemaphore = xSemaphoreCreateBinary();
 }
 
+/*
+ * chooses which command to execute (whether to move motors or servo)
+ */
 void executeCommand(PlotterData *pd, Servo &penServo) {
 	if(pd->gorm == 'G') {
 		switch(pd->gormNum) {
@@ -99,6 +108,9 @@ void executeCommand(PlotterData *pd, Servo &penServo) {
 	}
 }
 
+/*
+ * "main task" of the plotter.
+ */
 void taskExecute(void *pvParameters) {
 	Handles *commonHandles = (Handles*) pvParameters;
 	PlotterData *plotdat = new PlotterData(plotdat->pen, 380, 310);
@@ -107,19 +119,75 @@ void taskExecute(void *pvParameters) {
 
 	// caribourate()
 
+
 	for(;;) {
+//		penServo.penUp();
+//		vTaskDelay(500);
+//		penServo.penDown();
+//		vTaskDelay(500);
+//		penServo.penUp();
+//		vTaskDelay(500);
+//		penServo.penDown();
+//		std::string *rawCommand = new std::string("G1 X0 Y0 A0");
+//		parsakaali.generalParse(plotdat, *rawCommand);
+//		parsakaali.debug(plotdat, *rawCommand, false);
+//
+//		executeCommand(plotdat, penServo);
+//		delete rawCommand;
+//
+//		vTaskDelay(10);
+//
+//		std::string *com2 = new std::string("G1 X40 Y80 A0");
+//		parsakaali.generalParse(plotdat, *com2);
+//		parsakaali.debug(plotdat, *rawCommand, false);
+//
+//		executeCommand(plotdat, penServo);
+//		delete com2;
+//		vTaskDelay(10);
+//
+//		std::string *com3 = new std::string("G1 X80 Y0 A0");
+//		parsakaali.generalParse(plotdat, *com3);
+//		parsakaali.debug(plotdat, *rawCommand, false);
+//
+//		calculateDrive(plotdat);
+//		delete com3;
+//		vTaskDelay(10);
+//
+//		std::string *com4 = new std::string("G1 X0 Y0 A0");
+//		parsakaali.generalParse(plotdat, *com4);
+//		parsakaali.debug(plotdat, *rawCommand, false);
+//
+//		executeCommand(plotdat, penServo);
+//		delete com4;
+//		vTaskDelay(10);
+
+
+
 		std::string *rawCommand;
 		xQueueReceive(commonHandles->commandQueue_raw, &rawCommand, portMAX_DELAY);
 		parsakaali.generalParse(plotdat, *rawCommand);
+
+
+//		char commandBuffer[200];
+//		memset(commandBuffer, 0, sizeof(commandBuffer));
+//
+//		const char *format = "gorm: %c\r\ngormNum: %d\r\ncurX: %.2f\r\ncurY: %.2f\r\ntarX: %.2f\r\ntarY: %.2f\r\naux: %d\r\ntargetPen: %d\r\ntargetLaser: %d\r\n";
+//		snprintf(commandBuffer, sizeof(commandBuffer), format, plotdat->gorm, plotdat->gormNum,
+//				plotdat->absoluteCurrentX, plotdat->absoluteCurrentY, plotdat->absoluteTargetX, plotdat->absoluteTargetY,  plotdat->auxDelay, plotdat->targetPen, plotdat->targetLaser);
+//		ITM_write(commandBuffer);
+//		parsakaali.debug(plotdat, *rawCommand, false);
+
 		executeCommand(plotdat, penServo);
 //		vTaskDelay(5);
-//		parsakaali.debug(plotdat, *rawCommand, false);
 		delete rawCommand;
 		xSemaphoreGive(commonHandles->readyToReceive);
 
 	}
 }
 
+/*
+ * Calculates necessary values for justDrive()
+ */
 void calculateDrive(PlotterData *pd) {
 
 	int stepAbsoluteCurrentX = pd->convertToSteps(pd->absoluteCurrentX);
@@ -131,6 +199,8 @@ void calculateDrive(PlotterData *pd) {
 	int stepDeltaX = stepAbsoluteTargetX - stepAbsoluteCurrentX;
 	int stepDeltaY = stepAbsoluteTargetY - stepAbsoluteCurrentY;
 
+//	double stepsDistance = sqrt((stepDeltaX * stepDeltaX) + (stepDeltaY * stepDeltaY));
+
 	double stepDeltaMax = std::max(abs(stepDeltaX), abs(stepDeltaY));
 
 	double ratioX = (double) abs(stepDeltaX) / stepDeltaMax;
@@ -139,6 +209,9 @@ void calculateDrive(PlotterData *pd) {
 	justDrive(pd, stepAbsoluteCurrentX, stepAbsoluteCurrentY, stepAbsoluteTargetX, stepAbsoluteTargetY, stepDeltaX, stepDeltaY, ratioX, ratioY);
 }
 
+/*
+ * Handles which motor drives, in which direction and how fast.
+ */
 void justDrive(PlotterData *pd,
 		int stepAbsoluteCurrentX, int stepAbsoluteCurrentY,
 		int stepAbsoluteTargetX, int stepAbsoluteTargetY,
@@ -148,14 +221,10 @@ void justDrive(PlotterData *pd,
 	DigitalIoPin dirPinX(0, 28, DigitalIoPin::output, false);
 	DigitalIoPin dirPinY(1, 0, DigitalIoPin::output, false);
 
-	int poro = 400;
+	int poro = 350;
 	double countX = 0;
 	double countY = 0;
 
-	bool dirx = true;
-	bool diry = true;
-//	dirPinX.write(dirx);
-//	dirPinY.write(diry);
 	dirPinX.write(pd->dirX);
 	dirPinY.write(pd->dirY);
 
@@ -165,25 +234,20 @@ void justDrive(PlotterData *pd,
 			countX += ratioX;
 			if(countX >= 1) {
 				if(stepDeltaX > 0) {
-//					xuunta = true;
-//					dirPinX.write(true);
 					if(pd->dirX != true) {
 						dirPinX.write(true);
 						pd->dirX = true;
 					}
-//					if(dirx != true) {
-//						dirPinX.write(true);
-//					}
+//					dirPinX.write(true);
+
 					stepAbsoluteCurrentX += 1;
 				} else {
-//					xuunta = false;
 					if(pd->dirX != false) {
 						dirPinX.write(false);
 						pd->dirX = false;
 					}
-//					if(dirx != false) {
-//						dirPinX.write(false);
-//					}
+//					dirPinX.write(false);
+
 					stepAbsoluteCurrentX -= 1;
 				}
 
@@ -197,24 +261,21 @@ void justDrive(PlotterData *pd,
 			countY += ratioY;
 			if(countY >= 1) {
 				if(stepDeltaY > 0) {
-//					yuunta = true;
 					if(pd->dirY != false) {
 						dirPinY.write(false);
 						pd->dirY = false;
 					}
-//					if(diry != false) {
-//						dirPinY.write(false);
-//					}
+//					dirPinY.write(false);
+
 					stepAbsoluteCurrentY += 1;
 				} else {
-//					yuunta = false;
 					if(pd->dirY != true) {
 						dirPinY.write(true);
 						pd->dirY = true;
 					}
-//					if(diry != true) {
-//						dirPinY.write(true);
-//					}
+//					dirPinY.write(true);
+
+
 					stepAbsoluteCurrentY -= 1;
 				}
 
@@ -223,59 +284,44 @@ void justDrive(PlotterData *pd,
 				countY -= 1;
 			}
 		}
-		if(poro > 200) {
-			poro -= 3;
+		if(poro > 100) {
+			poro -= 2;
 		}
 	}
 
-//	pd->dirX = dirx;
-//	pd->dirY = diry;
+//	if((stepAbsoluteCurrentX != stepAbsoluteTargetX) && (stepAbsoluteCurrentY != stepAbsoluteTargetY)) {
+//		pd->absoluteCurrentX = pd->absoluteTargetX;
+//		pd->absoluteCurrentY = pd->absoluteTargetY;
+//	} else {
+//		while(1);
+//	}
+
 	pd->absoluteCurrentX = pd->absoluteTargetX;
 	pd->absoluteCurrentY = pd->absoluteTargetY;
-
 	pd->resetCompack();
 }
 
-
+/*
+ * Deferred task from RIT_IRQHandler to drive motors
+ */
 void dtaskMotor(void *pvParameters) {
 
 	DigitalIoPin stepPinX(0, 27, DigitalIoPin::output, false);
-//	DigitalIoPin dirPinX(0, 28, DigitalIoPin::output, false);
-
 	DigitalIoPin stepPinY(0, 24, DigitalIoPin::output, false);
-//	DigitalIoPin dirPinY(1, 0, DigitalIoPin::output, false);
 
 	while(1) {
 		xSemaphoreTake(motorSemaphore, (TickType_t) portMAX_DELAY );
 
 		switch(kumpi) {
 		case 1:
-//			dirPinX.write(xuunta);
 			stepPinX.write(true);
 			stepPinX.write(false);
 			break;
 		case 2:
-//			dirPinY.write(!yuunta);
 			stepPinY.write(true);
 			stepPinY.write(false);
 			break;
 		}
-
-//		switch(kumpi) {
-//		case 1:
-////			dirPinX.write(xuunta);
-//			stepPinX.write(true);
-//			stepPinX.write(false);
-//			break;
-//		case 2:
-////			dirPinY.write(!yuunta);
-//			stepPinY.write(true);
-//			stepPinY.write(false);
-//			break;
-//		}
-
-
-
 	}
 }
 

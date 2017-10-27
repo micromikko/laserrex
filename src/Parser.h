@@ -26,7 +26,7 @@ public:
 	void laserParse(PlotterData *plotdat, char *c_comstr);
 	void m10Parse(PlotterData *plotdat, char *c_comstr);
 
-	void debug(PlotterData *plotdat, std::string stringula, bool showAll=false);
+	void debug(PlotterData *plotdat, std::string debugString, bool showAll=false);
 
 private:
 

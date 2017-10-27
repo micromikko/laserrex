@@ -68,14 +68,14 @@ int main(void) {
 	 * tasks
 	 */
 	xTaskCreate(taskExecute, "taskExecute", 500, (void*) commonHandles, (tskIDLE_PRIORITY + 1UL), NULL);
-	xTaskCreate(taskSendOK, "taskSendOK", 256, (void*) commonHandles, (tskIDLE_PRIORITY + 4UL), NULL);
+	xTaskCreate(taskSendOK, "taskSendOK", 256, (void*) commonHandles, (tskIDLE_PRIORITY + 3UL), NULL);
 	
 	/*
 	 * dtasks
 	 */
-	xTaskCreate(dtaskUARTReader, "UARTReaderdTask", 256, (void*) commonHandles, (tskIDLE_PRIORITY +3UL), NULL);
-	xTaskCreate(dtaskHardStop, "HardStopdTask", 100, NULL, (tskIDLE_PRIORITY + 4UL), NULL); // keep at highest priority!
-	xTaskCreate(dtaskMotor, "motordTask", 200, NULL, (tskIDLE_PRIORITY + 2UL), NULL); // keep at highest priority!
+	xTaskCreate(dtaskUARTReader, "UARTReaderdTask", 500, (void*) commonHandles, (tskIDLE_PRIORITY +2UL), NULL);
+	xTaskCreate(dtaskHardStop, "HardStopdTask", 100, NULL, (tskIDLE_PRIORITY + 5UL), NULL); // keep at highest priority!
+	xTaskCreate(dtaskMotor, "motordTask", 200, NULL, (tskIDLE_PRIORITY + 3UL), NULL); // keep at highest priority!
 
 	xSemaphoreGive(commonHandles->readyToReceive);			 //This has to be initially available
 
