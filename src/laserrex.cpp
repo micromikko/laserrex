@@ -32,8 +32,14 @@
 #include "Servo.h"
 
 
+/* delete*/
+//#include "dtaskMotor.h"
+//#include "CommandPacket.h"
+//#include "Motor.h"
+
 // TODO: insert other definitions and declarations here
 
+// eventgroup?
 
 
 extern "C" {
@@ -75,6 +81,7 @@ int main(void) {
 
 	UARTModule_init();
 	RIT_init();
+
 	GPIO_interrupt_init();
 
 	vTaskStartScheduler();

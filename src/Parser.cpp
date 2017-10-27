@@ -8,6 +8,7 @@
 #include "Parser.h"
 #include <cstring>
 #include <stdlib.h>
+//#include "Motor.h"		// ???
 #include <cstdio>			// DEBUG
 #include "ITM_write.h"		// DEBUG
 
@@ -62,7 +63,8 @@ void Parser::xyParse(PlotterData *plotdat, char *c_comstr) {
 	c_comstr = pEnd + 2;
 	
 	plotdat->auxDelay = strtol(c_comstr, &pEnd, 10);
-
+	//  -->,-->,-->, consider atoi
+//	this->compack->auxDelay = atoi(c_comstr);
 }
 
 void Parser::gcodeParse(PlotterData *plotdat, char *c_comstr) {
