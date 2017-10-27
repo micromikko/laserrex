@@ -15,6 +15,10 @@ extern "C" { void RIT_IRQHandler(void); }
 void RIT_start(int count, int us);
 void RIT_init();
 
+void disablePinInterrupts();
+void enablePinInterrupts();
+void driveX (bool dir, DigitalIoPin &dirPin, PlotterData &pd);
+void driveY (bool dir, DigitalIoPin &dirPin, PlotterData &pd);
 void caribourate(PlotterData &pd);
 void executeCommand(PlotterData *pd, Servo &penServo);
 void taskExecute(void *pvParameters);

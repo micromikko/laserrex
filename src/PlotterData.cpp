@@ -38,8 +38,9 @@ PlotterData::PlotterData(KaksiUlotteisenLaserpiirtoLaitteentoimintamoodI kayYouE
 
 	// #define STEPS_PER_MM 87.58
 	// 87.58
-	this->stepsPerMM = 87.58; // -.,-.,-.,
-
+//	this->stepsPerMM = 87.58; // -.,-.,-.,
+	double stepsPerMMX = 0;
+	double stepsPerMMY = 0;
 	/*
 	 * Current
 	 */
@@ -67,15 +68,16 @@ PlotterData::~PlotterData() {
 }
 
 void PlotterData::calculateStepsPerMM() {
-	int stepsPerMMX = this->axisStepCountX / this->axisLengthX;
-	int stepsPerMMY = this->axisStepCountY / this->axisLengthY;
+	this->stepsPerMMX = this->axisStepCountX / this->axisLengthX;
+	this->stepsPerMMY = this->axisStepCountY / this->axisLengthY;
 
-	if(stepsPerMMX == stepsPerMMY) {
-		this->stepsPerMM = stepsPerMMX;
-	} else {
-		while(1);
-	}
+////	if(stepsPerMMX == stepsPerMMY) {
+////		this->stepsPerMM = stepsPerMMX;
+////	} else {
+////		while(1);
+////	}
 }
+
 
 void PlotterData::resetCompack() {
 	this->gorm = 0;
@@ -90,9 +92,19 @@ void PlotterData::resetCompack() {
 	this->targetLaser = 0;
 }
 
-int PlotterData::convertToSteps(const double before) {
+//int PlotterData::convertToSteps(const double before) {
+////	int jaska = (int) (before * this->stepsPerMM);
+////	return jaska;
+//	return (int) (before * this->stepsPerMM);
+//}
+int PlotterData::convertToStepsX(const double before) {
 //	int jaska = (int) (before * this->stepsPerMM);
 //	return jaska;
-	return (int) (before * this->stepsPerMM);
+	return (int) (before * this->stepsPerMMX);
+}
+int PlotterData::convertToStepsY(const double before) {
+//	int jaska = (int) (before * this->stepsPerMM);
+//	return jaska;
+	return (int) (before * this->stepsPerMMY);
 }
 

@@ -45,8 +45,9 @@ public:
 	int axisStepCountY;		// steps
 
 
-	double stepsPerMM;			// #define STEPS_PER_MM 87.58
-
+//	double stepsPerMM;			// #define STEPS_PER_MM 87.58
+	double stepsPerMMX;
+	double stepsPerMMY;
 	/*
 	 * Current
 	 */
@@ -74,7 +75,9 @@ public:
 	long auxDelay;			// us
 
 	void calculateStepsPerMM();
-	int convertToSteps(const double before);
+//	int convertToSteps(const double before);
+	int convertToStepsX(const double before);
+	int convertToStepsY(const double before);
 
 	void resetCompack();
 private:
